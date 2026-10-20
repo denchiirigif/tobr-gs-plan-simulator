@@ -1801,7 +1801,7 @@ var TP_SKILL_NAMES = ["なし", "最大HP＋30", "防御力＋5", "集中力＋5
 
   var last = null, busy = false, myHash = '';
   function status(t, err) { $('status').textContent = t; $('status').className = err ? 'err' : ''; }
-  // 本走メモの表示: iframe は中身の大きさ(端数でスクロールバーが出ないよう +2px)、それを上部のパネルと同じ横幅に合わせて表示する(2026-10-20 ユーザー指定。0.5〜1.5 倍)。
+  // 本走メモの表示: iframe は中身の大きさ(端数でスクロールバーが出ないよう +2px)、上部のパネルより広ければその幅まで縮めて表示する(2026-10-20 ユーザー指定。0.5〜1 倍。拡大はしない)。
   // 変えるのは表示だけ(PNG は iframe の中の大きさで作るので変わらない)
   function fitMemo() {
     var f = $('memo'), d = f.contentDocument;
@@ -1809,7 +1809,7 @@ var TP_SKILL_NAMES = ["なし", "最大HP＋30", "防御力＋5", "集中力＋5
     var r = d.body.getBoundingClientRect(), w = Math.max(Math.ceil(r.width) + 2, 100), h = Math.ceil(r.height) + 2;
     f.style.width = w + 'px'; f.style.height = h + 'px';
     var avail = document.querySelector('.panel').getBoundingClientRect().width - 2;   // 枠線ぶん
-    f.style.zoom = Math.min(1.5, Math.max(avail / w, 0.5));   // 上部のパネルと横幅をそろえる(狭い画面では縮小、広い画面では少し拡大)
+    f.style.zoom = Math.min(1, Math.max(avail / w, 0.5));   // 上部のパネルの幅に収まるよう縮めるだけ(拡大はしない。①②③との大きさの比を画面の幅によらず一定に。2026-10-20 ユーザー指定)
   }
   window.addEventListener('resize', fitMemo);
   function show(res) {
