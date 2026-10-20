@@ -157,7 +157,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </div>
 <div class="actions">
 <button id="run" class="primary" data-i18n="b_run">↓計画を出力</button>
-<button id="reset" data-i18n="b_reset">⇧初期値に戻す⇧</button>
+<button id="reset" data-i18n="b_reset">↑初期値に戻す↑</button>
 <span id="status"></span>
 </div>
 </section>
@@ -166,7 +166,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <label class="chk"><input type="checkbox" id="skopt"> <span data-i18n="skopt">分解する装備 / 素材潤沢ならカットする装備 のランダムスキルも表示する。</span></label>
 <span class="pngs">
 <button id="png_plan" disabled data-i18n="b_png_plan">pngで保存 (拾得計画表のみ)</button>
-<button id="png_all" disabled data-i18n="b_png_all">pngで保存 (拾得計画表 / ランダムスキル表 / リザルトセリフ表)</button>
+<button id="png_all" disabled data-i18n="b_png_all">pngで保存 (拾得計画表 / ランダムスキル表 / リザルトセリフ表 全て)</button>
 </span>
 </div>
 <div class="memo-wrap"><iframe id="memo" title="本走メモ" scrolling="no"></iframe></div>
@@ -1004,7 +1004,7 @@ if (typeof require !== 'undefined' && typeof module !== 'undefined' && require.m
 //   ②ヴォイドリングの1枠目はシートでは「ヴォイドリング計算用」を引くが、中身は 計算用_A列 の1枠目と同じ(どちらも解放フラグ 29 だけの表 S2a)。
 // tpMemoSkills_(gs, showOptional) → 表の HTML(本走メモの左の欄に入る)
 var TP_SKILL_B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-// [番号, 名前, 場所, 固定スキル, 不定の枠(28 枠のうち。null = 付かない), 重要6装備, BS強調, 分解/カット対象]
+// [番号, 名前, 場所, 固定スキル, 不定の枠(28 枠のうち。null = 付かない), 重要6装備, BS強調(2026-10-21 から色分けには使わない), 分解/カット対象]
 var TP_SKILL_ROWS = [
   ['①', 'レジストリング', 'アバル', 'なし', null, false, false, true],
   ['②', 'ヴォイドリング', 'タイタニア', 'なし', 0, true, false, false],
@@ -1022,7 +1022,14 @@ var TP_SKILL_ROWS = [
   ['⑭', 'ドピンクシャツ', 'ブルナーク台地', 'なし', 20, true, true, false],
   ['⑮', 'ビーストリング', 'プルナハ湖畔崖路', 'なし', 22, true, false, false]
 ];
-var TP_SKILL_ATK_BOLD = ['②', '⑦'];   // 攻撃力＋x を太字にする装備(ヴォイドリング・カルサイトブレード)
+// スキルの種類ごとの文字色(シード探しのプルダウンと共通。2026-10-21 ユーザー指定で本走メモのスキル表もこれに統一)。
+// 攻撃力・BS・防御力はユーザー指定、ほかは Claude の割り当て(2026-10-20)。名前は日本語で判定
+var TP_SKILL_COLORS = [[/^攻撃力/, '#ff4040'], [/^BS時のBG増加量/, '#ff4fa3'], [/^防御力/, '#6ec6ff'], [/^術攻撃/, '#ffad55'], [/^術防御/, '#a9a1ff'],
+  [/^最大HP/, '#7fd17f'], [/^集中力/, '#ffe066'], [/^敵撃破時にHP回復/, '#8fe3c8'], [/^HP吸収/, '#d0aaff'], [/効果を\d+%軽減$/, '#c9b48a'], [/^対「/, '#e0a070']];
+function tpSkillColor_(name) {   // スキル名(日本語)→ 文字色('' = 色なし)
+  for (var i = 0; i < TP_SKILL_COLORS.length; i++) if (TP_SKILL_COLORS[i][0].test(name)) return TP_SKILL_COLORS[i][1];
+  return '';
+}
 function tpSkillAt_(gs, slot) {   // GlobalSeed gs(1〜65536)の枠 slot のスキル名(なし = 'なし')
   var c = TP_SKILL_B64.indexOf(TP_SKILL_CODES.charAt((gs - 1) * 28 + slot));
   return c > 0 ? TP_SKILL_NAMES[c] : 'なし';
@@ -1047,17 +1054,16 @@ function tpMemoSkills_(gs, showOptional, en) {
     var place = en ? TP_SKILL_PLACE_EN[r[2]] || r[2] : r[2];
     var fixed = en ? (r[3] === 'なし' ? 'None' : en.fixed[r[3]] || r[3]) : r[3];
     var shown = en ? (r[4] === null ? ['None', 'None'] : [tpSkillNameEn_(gs, r[4], en), tpSkillNameEn_(gs, r[4] + 1, en)]) : s;
-    // 色分け(2026-10-20 ユーザー指定): BS時のBG増加量 = ⑧⑭ はピンク太字 / 攻撃力＋x = ②⑦ は赤太字 / それ以外の装備の BS・攻撃力 = 緑太字 / なし = 灰 / 重要6装備のその他 = 太字
-    var cls = function (v) {
-      if (v === 'なし') return 'sn';
-      if (v.indexOf('BS時のBG増加量') >= 0) return r[6] ? 'sb' : 'sg';
-      if (/^攻撃力＋\d+$/.test(v)) return TP_SKILL_ATK_BOLD.indexOf(r[0]) >= 0 ? 'sa si' : 'sg';
-      return r[5] ? 'si' : '';
+    // 色分け(2026-10-21 ユーザー指定でシード探しのプルダウンと同じ規則に): スキルの種類ごとの色の太字(tpSkillColor_)/ なし = 灰。装備による違いはなし
+    var att = function (v) {   // 不定の枠の <td> の属性
+      if (v === 'なし') return ' class="c sn"';
+      var col = tpSkillColor_(v);
+      return ' class="c si"' + (col ? ' style="color:' + col + '"' : '');
     };
     var tr = '<tr class="' + (r[5] ? 'd1' : 'd0') + '">';
     rows.push(tr + '<td rowspan="2" class="c">' + r[0] + '</td><td class="' + (r[7] ? 'so' : (r[5] ? 'si' : '')) + '">' + esc(name) + '</td>' +
-      '<td rowspan="2" class="c ' + (r[3] === 'なし' ? 'sn' : '') + '">' + esc(fixed) + '</td><td class="c ' + cls(s[0]) + '">' + esc(shown[0]) + '</td></tr>');
-    rows.push(tr + '<td class="lk sp">(' + esc(place) + ')</td><td class="c ' + cls(s[1]) + '">' + esc(shown[1]) + '</td></tr>');
+      '<td rowspan="2" class="c ' + (r[3] === 'なし' ? 'sn' : '') + '">' + esc(fixed) + '</td><td' + att(s[0]) + '>' + esc(shown[0]) + '</td></tr>');
+    rows.push(tr + '<td class="lk sp">(' + esc(place) + ')</td><td' + att(s[1]) + '>' + esc(shown[1]) + '</td></tr>');
   });
   if (en) return '<h2>Predicted random skills' + (showOptional ? ' (including gear to dismantle / cut)' : ' (6 key items only)') + '</h2>\n' +
     '<table class="sk">\n<tr><th>No.</th><th>Item</th><th>Fixed skill</th><th>Random skills</th></tr>\n' + rows.join('\n') + '\n</table>';
@@ -1191,7 +1197,7 @@ function tpSeedIsTop_(opts, c) {
   'use strict';
   var LOGIC = document.getElementById('logic').textContent;
   // 計算ロジック(コード.js)をこのページのスコープでも1回だけ読む(GlobalSeed の表示・Worker が使えないときの計算用)
-  var L = new Function(LOGIC + '\n;return {tpJump_:tpJump_,tpVal_:tpVal_,tpMemoPlan_:tpMemoPlan_,tpMemoHtml_:tpMemoHtml_,tpMemoSkills_:tpMemoSkills_,TP_MEMO_BATTLE:TP_MEMO_BATTLE,tpSeedSearch_:tpSeedSearch_,tpSeedCount_:tpSeedCount_,tpSeedOptions_:tpSeedOptions_,tpSeedIsTop_:tpSeedIsTop_,tpSkillCode_:tpSkillCode_,TP_SKILL_ROWS:TP_SKILL_ROWS,TP_SKILL_NAMES:TP_SKILL_NAMES,TP_SKILL_PLACE_EN:TP_SKILL_PLACE_EN,TP_SKILL_SUFFIX_EN:TP_SKILL_SUFFIX_EN};')();
+  var L = new Function(LOGIC + '\n;return {tpJump_:tpJump_,tpVal_:tpVal_,tpMemoPlan_:tpMemoPlan_,tpMemoHtml_:tpMemoHtml_,tpMemoSkills_:tpMemoSkills_,TP_MEMO_BATTLE:TP_MEMO_BATTLE,tpSeedSearch_:tpSeedSearch_,tpSeedCount_:tpSeedCount_,tpSeedOptions_:tpSeedOptions_,tpSeedIsTop_:tpSeedIsTop_,tpSkillCode_:tpSkillCode_,tpSkillColor_:tpSkillColor_,TP_SKILL_ROWS:TP_SKILL_ROWS,TP_SKILL_NAMES:TP_SKILL_NAMES,TP_SKILL_PLACE_EN:TP_SKILL_PLACE_EN,TP_SKILL_SUFFIX_EN:TP_SKILL_SUFFIX_EN};')();
   // 素材の並び・既定の目標(2026-10-20 ユーザー指定: 青銅4・琥珀4・錬成粉3・黒銀1・方解石1、許容コストはすべて A)
   var ITEMS = [['青銅の塊', '青銅の塊', 4, 'A', '#6e9bff'], ['琥珀の欠片', '琥珀の欠片', 4, 'A', '#ff9900'], ['下級の錬成粉', '下級の錬成粉', 3, 'A', '#980000'],
     ['黒銀の塊', '黒銀の塊', 1, 'A', '#9900ff'], ['方解石の欠片', '方解石の欠片', 1, 'A', '#6aa84f']];   // 5番目 = 素材名の色(元シート ☆本体☆ L17:L21。青銅 #0000ff・方解石 #274e13 は黒地用に明るく)
@@ -1871,7 +1877,7 @@ function tpSeedIsTop_(opts, c) {
     h_goals: '• Treasure point material pickup targets', th_mat: 'Material', th_cap: 'Target count', th_cost: 'Max detour cost',
     h_bt: '• Extra RNG rolls from result lines',
     bt_lead: 'In the two battles below in Titania, the result-line roll adds an uncertain number of RNG calls.<br>&ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; / &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo;',
-    b_run: '&darr;Build plan', b_png_plan: 'Save PNG (pickup plan table only)', b_png_all: 'Save PNG (pickup plan / random skills / result lines tables)', b_reset: '&#8679;Reset to defaults&#8679;',
+    b_run: '&darr;Build plan', b_png_plan: 'Save PNG (pickup plan table only)', b_png_all: 'Save PNG (pickup plan / random skills / result lines tables, all)', b_reset: '&uarr;Reset to defaults&uarr;',
     skopt: 'Also show the random skills of gear you dismantle / cut when materials are plentiful.',
     n1: '+0 to +4 columns: Extra RNG Rolls (= how many more RNG calls than planned happened between NewGame and Burnack Plateau.)<br>= the sum of<ul><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; (+0~2)</li><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo; (+0~2)</li><li>Pickups (adjusting by picking up treasure points, Fire Ring, etc.) (+1)</li></ul>',
     stamp: 'Plan logic: コード.js generated 2026-10-21 (sha256 3018f2241688) / page built 2026-10-21',
@@ -1950,14 +1956,10 @@ function tpSeedIsTop_(opts, c) {
   // ---- シード探し(2026-10-20)。計算は seed_search.js ----
   var SD_OPTS = {};   // 不定の枠の先頭 → 出うるスキル番号(一度だけ数える)
   // プルダウンの文字色(スキルの種類ごと。名前は日本語で判定)
-  var SKILL_COLORS = [[/^攻撃力/, '#ff4040'], [/^BS時のBG増加量/, '#ff4fa3'], [/^防御力/, '#6ec6ff'], [/^術攻撃/, '#ffad55'], [/^術防御/, '#a9a1ff'],
-    [/^最大HP/, '#7fd17f'], [/^集中力/, '#ffe066'], [/^敵撃破時にHP回復/, '#8fe3c8'], [/^HP吸収/, '#d0aaff'], [/効果を\d+%軽減$/, '#c9b48a'], [/^対「/, '#e0a070']];
   function skillColor(c) {
     if (c < 0) return '';
     if (c === 0) return '#9a9a9a';
-    var n = L.TP_SKILL_NAMES[c];
-    for (var i = 0; i < SKILL_COLORS.length; i++) if (SKILL_COLORS[i][0].test(n)) return SKILL_COLORS[i][1];
-    return '';
+    return L.tpSkillColor_(L.TP_SKILL_NAMES[c]);   // 色の表は memo_skills.js の TP_SKILL_COLORS(本走メモのスキル表と共通)
   }
   function paintSelect(sel) { sel.style.color = skillColor(Number(sel.value)) || ''; sel.style.fontWeight = Number(sel.value) > 0 ? 'bold' : ''; }
   function skillName(c) { return c < 0 ? T('指定なし', 'Any') : c === 0 ? T('なし', 'None') : isEn() ? TP_EN.skills[(c < 10 ? '0' : '') + c] || L.TP_SKILL_NAMES[c] : L.TP_SKILL_NAMES[c]; }
