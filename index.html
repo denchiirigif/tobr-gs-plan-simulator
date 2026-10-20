@@ -112,7 +112,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <h1 data-i18n="h1">本走メモ作成(ベルセリア リマスター RTA トレジャーポイント拾得計画)</h1>
 <label class="lang"><input type="checkbox" id="lang"> English</label>
 </div>
-<p class="lead" data-i18n="lead">NewGame までの操作(または n0)と目標確保数を入れて「↓計画を出力」を押すと、本走メモ(拾得計画の表)ができます。計算はすべてこのブラウザの中で行います。</p>
+<p class="lead" data-i18n="lead">NewGame までの操作(または n0)と目標確保数を入れて「↓計画を出力↓」を押すと、本走メモ(拾得計画の表)ができます。計算はすべてこのブラウザの中で行います。</p>
 </header>
 <nav class="tabs">
 <button class="tab on" id="tab_plan" data-i18n="tab_plan">TP拾得計画の作成</button>
@@ -157,7 +157,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </div>
 </div>
 <div class="actions">
-<button id="run" class="primary" data-i18n="b_run">↓計画を出力</button>
+<button id="run" class="primary" data-i18n="b_run">↓計画を出力↓</button>
 <button id="reset" data-i18n="b_reset">↑初期値に戻す↑</button>
 <span id="status"></span>
 </div>
@@ -1862,7 +1862,7 @@ function tpSeedIsTop_(opts, c) {
   // 英語版のページの文言(2026-10-20)。キー = HTML の data-i18n。日本語は HTML に書いてあるもの
   var I18N = {
     h1: 'Run Memo Builder (Tales of Berseria Remastered RTA &mdash; treasure point pickup plan)',
-    lead: 'Enter your actions before NewGame (or n0) and your target counts, then press &ldquo;&darr;Build plan&rdquo; to make the run memo (pickup plan table). Everything is calculated in your browser.',
+    lead: 'Enter your actions before NewGame (or n0) and your target counts, then press &ldquo;&darr;Build plan&darr;&rdquo; to make the run memo (pickup plan table). Everything is calculated in your browser.',
     h_ops: '• Actions before NewGame', th_op: 'Action', th_cnt: 'Times', th_rng: 'RNG calls',
     op_boot: 'Launch &rarr; first title screen (17324)', fixed1: '1 (fixed)',
     op_ld: 'Load a save (including quick load)<br>Choose &ldquo;Return to Title&rdquo; in another save<br>Lose a battle and see the retry screen',
@@ -1878,7 +1878,7 @@ function tpSeedIsTop_(opts, c) {
     h_goals: '• Treasure point material pickup targets', th_mat: 'Material', th_cap: 'Target count', th_cost: 'Max detour cost',
     h_bt: '• Extra RNG rolls from result lines',
     bt_lead: 'In the two battles below in Titania, the result-line roll adds an uncertain number of RNG calls.<br>&ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; / &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo;',
-    b_run: '&darr;Build plan', b_png_plan: 'Save PNG (pickup plan table only)', b_png_all: 'Save PNG (pickup plan / random skills / result lines tables, all)', b_reset: '&uarr;Reset to defaults&uarr;',
+    b_run: '&darr;Build plan&darr;', b_png_plan: 'Save PNG (pickup plan table only)', b_png_all: 'Save PNG (pickup plan / random skills / result lines tables, all)', b_reset: '&uarr;Reset to defaults&uarr;',
     skopt: 'Also show the random skills of gear you dismantle / cut when materials are plentiful.',
     n1: '+0 to +4 columns: Extra RNG Rolls (= how many more RNG calls than planned happened between NewGame and Burnack Plateau.)<br>= the sum of<ul><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; (+0~2)</li><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo; (+0~2)</li><li>Pickups (adjusting by picking up treasure points, Fire Ring, etc.) (+1)</li></ul>',
     stamp: 'Plan logic: コード.js generated 2026-10-21 (sha256 3018f2241688) / page built 2026-10-21',
