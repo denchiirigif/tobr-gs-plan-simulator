@@ -90,6 +90,8 @@ h2.pur{color:#c48cff}
 label.chk{font-size:13px;display:flex;gap:6px;align-items:center;cursor:pointer;color:#e06666;font-weight:bold}
 label.chk input{width:16px;height:16px}
 .actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.btn4{display:grid;grid-template-columns:auto auto;gap:8px}   /* ①計画を出力 ②初期値に戻す / ③④ PNG 保存 の2行2列(2026-10-21 ユーザー指定) */
+#pngbox{position:fixed;left:-20000px;top:0;border:0;width:4000px;height:3000px}   /* PNG 用の本走メモを描く見えない iframe */
 button{cursor:pointer;padding:5px 12px}
 button.primary{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:bold}
 button:disabled{opacity:.5;cursor:default}
@@ -108,7 +110,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <h1 data-i18n="h1">本走メモ作成(ベルセリア リマスター RTA トレジャーポイント拾得計画)</h1>
 <label class="lang"><input type="checkbox" id="lang"> English</label>
 </div>
-<p class="lead" data-i18n="lead">NewGame までの操作(または n0)と目標確保数を入れて「計画を作る」を押すと、本走メモ(拾得計画の表)ができます。計算はすべてこのブラウザの中で行います。</p>
+<p class="lead" data-i18n="lead">NewGame までの操作(または n0)と目標確保数を入れて「↓計画を出力↓」を押すと、本走メモ(拾得計画の表)ができます。計算はすべてこのブラウザの中で行います。</p>
 </header>
 <nav class="tabs">
 <button class="tab on" id="tab_plan" data-i18n="tab_plan">TP拾得計画の作成</button>
@@ -153,16 +155,19 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </div>
 </div>
 <div class="actions">
-<button id="run" class="primary" data-i18n="b_run">計画を作る</button>
-<button id="png1" disabled data-i18n="b_png1">PNG 保存(1倍)</button>
-<button id="png15" disabled data-i18n="b_png15">PNG 保存(1.5倍)</button>
+<div class="btn4">
+<button id="run" class="primary" data-i18n="b_run">↓計画を出力↓</button>
 <button id="reset" data-i18n="b_reset">初期値に戻す</button>
+<button id="png_plan" disabled data-i18n="b_png_plan">pngで保存 (拾得計画テーブルのみ)</button>
+<button id="png_all" disabled data-i18n="b_png_all">pngで保存 (拾得計画、ランダムスキル、セリフ表)</button>
+</div>
 <span id="status"></span>
 </div>
 </section>
 <hr class="sep">
 <label class="chk"><input type="checkbox" id="skopt"> <span data-i18n="skopt">分解する装備 / 素材潤沢ならカットする装備 のランダムスキルも表示する。</span></label>
 <div class="memo-wrap"><iframe id="memo" title="本走メモ" scrolling="no"></iframe></div>
+<iframe id="pngbox" title="PNG" scrolling="no" aria-hidden="true" tabindex="-1"></iframe>
 <section class="notes">
 <ul>
 <li data-i18n="n1">+0〜+4 の列 ：Extra RNG Rolls (= NewGame〜ブルナーク台地の前で予定より乱数が進んだ回数。)<br>= 以下の合計<ul><li>『対魔士1傭兵1のリザルトセリフ分』 (+0~2)</li><li>『対魔士1傭兵2のリザルトセリフ分』 (+0~2)</li><li>『拾得(トレジャーポイント拾得での調整、ファイアリングなど)』 (+1)</li></ul></li>
@@ -968,7 +973,8 @@ function tpMemoBody_(res, how, web) {
   var en = web && web.en;
   var h1 = '<h1><b>GS ' + m.gs + '</b>' + (en ? ' (n0 ' + m.n0 + ')&nbsp;&nbsp; ' + TP_MEMO_TXT.en.h1 : '(n0 ' + m.n0 + ')　' + TP_MEMO_TXT.ja.h1) + '</h1>';
   if (web) {   // ウェブページ(2026-10-20 ユーザー指定): 左の欄 = 予測されるランダムスキル(web.skills)、右 = 拾得計画。増分表はメモに入れず、ページの入力欄に出す
-    return h1 + '\n\n<div class="row"><div class="lc"><div>\n' + (web.skills || '') + '\n</div>\n' + (how || '') +
+    if (web.planOnly) return h1 + '\n\n' + tpMemoPlanTable_(res, en) + '\n';   // PNG「拾得計画テーブルのみ」(2026-10-21)
+    return h1 + '\n\n<div class="row"><div class="lc"><div>\n' + (web.battle ? web.battle + '\n' : '') + (web.skills || '') + '\n</div>\n' + (how || '') +   // web.battle = PNG「拾得計画、ランダムスキル、セリフ表」のときだけ増分表を左上に(2026-10-21)
       '\n</div><div>\n' + tpMemoPlanTable_(res, en) + '\n</div></div>\n';
   }
   return h1 + '\n\n<div class="row"><div class="lc"><div>\n' + TP_MEMO_BATTLE + '\n</div>\n' + (how || '') + '\n</div><div>\n' + tpMemoPlanTable_(res) + '\n</div></div>\n';
@@ -1846,7 +1852,7 @@ function tpSeedIsTop_(opts, c) {
   // 英語版のページの文言(2026-10-20)。キー = HTML の data-i18n。日本語は HTML に書いてあるもの
   var I18N = {
     h1: 'Run Memo Builder (Tales of Berseria Remastered RTA &mdash; treasure point pickup plan)',
-    lead: 'Enter your actions before NewGame (or n0) and your target counts, then press &ldquo;Build plan&rdquo; to make the run memo (pickup plan table). Everything is calculated in your browser.',
+    lead: 'Enter your actions before NewGame (or n0) and your target counts, then press &ldquo;&darr;Build plan&darr;&rdquo; to make the run memo (pickup plan table). Everything is calculated in your browser.',
     h_ops: '• Actions before NewGame', th_op: 'Action', th_cnt: 'Times', th_rng: 'RNG calls',
     op_boot: 'Launch &rarr; first title screen (17324)', fixed1: '1 (fixed)',
     op_ld: 'Load a save (including quick load)<br>Choose &ldquo;Return to Title&rdquo; in another save<br>Lose a battle and see the retry screen',
@@ -1862,7 +1868,7 @@ function tpSeedIsTop_(opts, c) {
     h_goals: '• Treasure point material pickup targets', th_mat: 'Material', th_cap: 'Target count', th_cost: 'Max detour cost',
     h_bt: '• Extra RNG rolls from result lines',
     bt_lead: 'In the two battles below in Titania, the result-line roll adds an uncertain number of RNG calls.<br>&ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; / &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo;',
-    b_run: 'Build plan', b_png1: 'Save PNG (1&times;)', b_png15: 'Save PNG (1.5&times;)', b_reset: 'Reset to defaults',
+    b_run: '&darr;Build plan&darr;', b_png_plan: 'Save PNG (pickup plan table only)', b_png_all: 'Save PNG (pickup plan, random skills, result lines table)', b_reset: 'Reset to defaults',
     skopt: 'Also show the random skills of gear you dismantle / cut when materials are plentiful.',
     n1: '+0 to +4 columns: Extra RNG Rolls (= how many more RNG calls than planned happened between NewGame and Burnack Plateau.)<br>= the sum of<ul><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; (+0~2)</li><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo; (+0~2)</li><li>Pickups (adjusting by picking up treasure points, Fire Ring, etc.) (+1)</li></ul>',
     stamp: 'Plan logic: コード.js generated 2026-10-21 (sha256 3018f2241688) / page built 2026-10-21',
@@ -2119,8 +2125,8 @@ function tpSeedIsTop_(opts, c) {
     var f = $('memo'), html = L.tpMemoHtml_(res, '', { skills: L.tpMemoSkills_(res.meta.gs, $('skopt').checked, en), en: en });
     f.onload = fitMemo;
     f.srcdoc = html;
-    $('png1').disabled = $('png15').disabled = false;
-    status(T('できました: GS ' + res.meta.gs + '(n0 ' + res.meta.n0 + ')', 'Done: GS ' + res.meta.gs + ' (n0 ' + res.meta.n0 + ')'));
+    $('png_plan').disabled = $('png_all').disabled = false;
+    status(T('↓できました。GS' + res.meta.gs + '↓', '↓Done. GS' + res.meta.gs + '↓'));
   }
   function run() {
     if (busy) return;
@@ -2174,10 +2180,20 @@ function tpSeedIsTop_(opts, c) {
     location.replace(myHash);
   });
 
-  // PNG 保存: 表示中の本走メモ(iframe の中身)を SVG の foreignObject 経由で canvas に描く。大きさは body の外形(余白 6px 込み)
-  function savePng(scale) {
+  // PNG 保存(2026-10-21 ユーザー指定で2種類・1倍): kind = 'plan'(拾得計画テーブルのみ)/ 'all'(拾得計画・ランダムスキル・セリフの増分表)。
+  // 見えない iframe(#pngbox)にその中身の本走メモを描いてから savePngDoc で画像にする
+  function savePng(kind) {
     if (!last) return;
-    var doc = $('memo').contentDocument, b = doc.body;
+    var en = isEn() ? TP_EN : null;
+    var web = kind === 'plan' ? { planOnly: true, en: en }
+      : { skills: L.tpMemoSkills_(last.meta.gs, $('skopt').checked, en), battle: en ? '<h2>Extra RNG rolls from result lines (both battles)</h2>\n' + battleEn() : L.TP_MEMO_BATTLE, en: en };
+    var f = $('pngbox');
+    f.onload = function () { f.onload = null; savePngDoc(f.contentDocument, 1, T('本走メモ_GS', 'RunMemo_GS') + last.meta.gs + (kind === 'plan' ? T('_拾得計画', '_plan') : '') + '.png'); };
+    f.srcdoc = L.tpMemoHtml_(last, '', web);
+  }
+  // 本走メモの文書を SVG の foreignObject 経由で canvas に描く。大きさは body の外形(余白 6px 込み)
+  function savePngDoc(doc, scale, name) {
+    var b = doc.body;
     var w = Math.ceil(b.getBoundingClientRect().width), h = Math.ceil(b.getBoundingClientRect().height);
     var xhtml = new XMLSerializer().serializeToString(doc.documentElement);
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w * scale + '" height="' + h * scale + '" viewBox="0 0 ' + w + ' ' + h + '">' +
@@ -2194,7 +2210,7 @@ function tpSeedIsTop_(opts, c) {
         if (!blob) { status('PNG を作れませんでした(このブラウザでは非対応の可能性)', true); return; }
         var a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = T('本走メモ_GS', 'RunMemo_GS') + last.meta.gs + (scale === 1 ? '' : '@' + scale + 'x') + '.png';
+        a.download = name;
         document.body.appendChild(a); a.click(); a.remove();
         setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
       }, 'image/png');
@@ -2216,8 +2232,8 @@ function tpSeedIsTop_(opts, c) {
     t.getContext('2d').drawImage(c, 0, 0);
     return t;
   }
-  $('png1').addEventListener('click', function () { savePng(1); });
-  $('png15').addEventListener('click', function () { savePng(1.5); });
+  $('png_plan').addEventListener('click', function () { savePng('plan'); });
+  $('png_all').addEventListener('click', function () { savePng('all'); });
   // 上段の左右(① と ②③)の下端をそろえる: 縦に長い方の列を縮める(2026-10-20 ユーザー指定。下限 0.75)
   function fitOps() {
     var c1 = document.querySelector('#pg-plan .cols > .col:first-child'), c2 = document.querySelector('#pg-plan .cols > .col:last-child');
