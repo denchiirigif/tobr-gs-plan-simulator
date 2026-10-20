@@ -22,7 +22,8 @@ nav.tabs .tab.on{background:var(--ac);border-color:var(--ac);color:#fff}
 #pg-seed .cols{flex-wrap:nowrap}
 #pg-seed .cols > .col:first-child{flex:0 0 auto}   /* 左(スキル指定)は縮めない */
 #pg-seed .cols > .col:last-child{flex:1 1 0;min-width:420px}
-#pg-seed .col > h2:not(:first-child){margin-top:14px}   /* 右(結果)で幅を調整する(作り方の列が折り返す) */
+#pg-seed .col > h2:not(:first-child){margin-top:14px}
+#pg-seed h2[data-i18n="sd_h_res"]{margin-top:18px;padding-top:14px;border-top:1px solid var(--ln)}   /* コスト設定とシードの表の間に区切り線(2026-10-20 ユーザー指定) */   /* 右(結果)で幅を調整する(作り方の列が折り返す) */
 .sd-cost input{width:5em}
 .sd-skill td{white-space:nowrap}
 .sd-skill td.sel select{display:block;margin:1px 0;width:15em}
