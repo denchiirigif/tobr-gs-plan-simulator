@@ -166,10 +166,8 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <div class="col">
 <h2 data-i18n="sd_h_cost">■ コスト設定</h2>
 <table class="goals sd-cost"><tbody>
-<tr><td data-i18n="sd_c_ng">NewGame 押し直し 1回</td><td><input type="number" min="0" step="1" value="1" id="sd_c_ng"></td></tr>
-<tr><td data-i18n="sd_c_half">MAP 移動(半往復)</td><td><input type="number" min="0" step="1" value="1" id="sd_c_half"></td></tr>
-<tr><td data-i18n="sd_c_load">ロード＆タイトル</td><td><input type="number" min="0" step="1" value="5" id="sd_c_load"></td></tr>
-<tr><td data-i18n="sd_c_pick">アイテム拾得</td><td><input type="number" min="0" step="1" value="5" id="sd_c_pick"></td></tr>
+<tr><td data-i18n="sd_c_ng">NewGame 押し直し 1回</td><td><input type="number" min="0" step="1" value="1" id="sd_c_ng"></td><td data-i18n="sd_c_load">ロード＆タイトル</td><td><input type="number" min="0" step="1" value="5" id="sd_c_load"></td></tr>
+<tr><td data-i18n="sd_c_half">MAP 移動(半往復)</td><td><input type="number" min="0" step="1" value="1" id="sd_c_half"></td><td data-i18n="sd_c_pick">アイテム拾得</td><td><input type="number" min="0" step="1" value="5" id="sd_c_pick"></td></tr>
 </tbody></table>
 <h2 data-i18n="sd_h_skill">■ ランダムスキル指定</h2>
 <label class="chk"><input type="checkbox" id="sd_opt"> <span data-i18n="sd_opt">分解する装備 / 素材潤沢ならカットする装備 も指定する。</span></label>
@@ -183,8 +181,9 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <div class="actions sd-act"><span data-i18n="sd_limit">最大表示件数</span><input type="number" id="sd_limit" min="1" max="50" step="1" value="5"><button id="sd_run" class="primary" data-i18n="sd_run">探す</button><span id="sd_status"></span></div>
 <div id="sd_res"></div>
 <div class="fn">
+<p data-i18n="sd_note0">「↑」の付いたスキルは、そのレベル以上(例: 攻撃力＋5↑ = ＋5・＋8・＋15 のどれか)。</p>
 <p data-i18n="sd_note1">ロード＆タイトルは最大3セット。1セットで往復するのは1か所だけ(Nか所で往復するならロード＆タイトルも Nセット)。</p>
-<p data-i18n="sd_note2">「使う」を押すと、拾得計画の出力の操作の表にその作り方が入り、計画を作ります。</p>
+<p data-i18n="sd_note2">「拾得計画に使う」を押すと、拾得計画の出力の操作の表にその作り方が入り、計画を作ります。</p>
 </div>
 </div>
 </div>
@@ -1067,12 +1066,28 @@ var TP_SKILL_NAMES = ["なし", "最大HP＋30", "防御力＋5", "集中力＋5
 //   同点なら ロード＆タイトルが少ない → 押し直しが少ない → n0 が小さい 順。
 // 条件(conds): [{ slot: 不定の枠の先頭(TP_SKILL_ROWS の 5 番目), want: [番号, 番号] }]。番号 = スキル番号(0 = なし)、-1 = 指定なし。
 //   同じ装備の2枠は順番を問わない(ユーザー指定)。
+//   スキルの指定は「そのレベル以上」(2026-10-20 ユーザー指定: 攻撃力＋5 を選んだら ＋8・＋15 でもよい。低いレベルだけ、という指定は無くした)。
+//   同じ系統 = 名前の数字を除いた部分が同じ(攻撃力＋N、BS時のBG増加量N倍、火傷効果をN%軽減、対「獣」性能＋N％ …)。なし は「なし」だけに合う。
+var TP_SKILL_FAM = [], TP_SKILL_LV = [];
+function tpSkillFamInit_() {
+  if (TP_SKILL_FAM.length) return;
+  TP_SKILL_NAMES.forEach(function (n, c) {
+    var m = /\d+(\.\d+)?/.exec(n || '');
+    TP_SKILL_FAM[c] = c === 0 ? 'なし' : (n || '').replace(/\d+(\.\d+)?/, '#');
+    TP_SKILL_LV[c] = m ? parseFloat(m[0]) : 0;
+  });
+}
+function tpSkillSat_(code, want) {   // 枠のスキル code が指定 want を満たすか
+  if (want < 0) return true;
+  if (want === 0 || code === 0) return code === want;
+  return TP_SKILL_FAM[code] === TP_SKILL_FAM[want] && TP_SKILL_LV[code] >= TP_SKILL_LV[want];
+}
 function tpSkillCode_(gs, slot) { return TP_SKILL_B64.indexOf(TP_SKILL_CODES.charAt((gs - 1) * 28 + slot)); }
 function tpSeedMatch_(gs, conds) {
+  tpSkillFamInit_();
   for (var i = 0; i < conds.length; i++) {
     var c = conds[i], x = tpSkillCode_(gs, c.slot), y = tpSkillCode_(gs, c.slot + 1), w = c.want;
-    if (w[0] >= 0 && w[1] >= 0) { if (!((x === w[0] && y === w[1]) || (x === w[1] && y === w[0]))) return false; }
-    else if (w[0] >= 0 || w[1] >= 0) { var v = w[0] >= 0 ? w[0] : w[1]; if (x !== v && y !== v) return false; }
+    if (!((tpSkillSat_(x, w[0]) && tpSkillSat_(y, w[1])) || (tpSkillSat_(x, w[1]) && tpSkillSat_(y, w[0])))) return false;
   }
   return true;
 }
@@ -1139,7 +1154,21 @@ function tpSeedOptions_(slot) {
     var x = tpSkillCode_(gs, slot), y = tpSkillCode_(gs, slot + 1);
     cnt[x] = (cnt[x] || 0) + 1; cnt[y] = (cnt[y] || 0) + 1;
   }
-  return Object.keys(cnt).map(Number).sort(function (a, b) { return cnt[b] - cnt[a] || a - b; });
+  // 並び: なし → 系統ごと(系統の出る回数の多い順)、系統の中はレベルの低い順
+  tpSkillFamInit_();
+  var fam = {};
+  Object.keys(cnt).forEach(function (k) { var f = TP_SKILL_FAM[k]; fam[f] = (fam[f] || 0) + cnt[k]; });
+  return Object.keys(cnt).map(Number).sort(function (a, b) {
+    if ((a === 0) !== (b === 0)) return a === 0 ? -1 : 1;
+    var fa = TP_SKILL_FAM[a], fb = TP_SKILL_FAM[b];
+    if (fa !== fb) return fam[fb] - fam[fa] || (fa < fb ? -1 : 1);
+    return TP_SKILL_LV[a] - TP_SKILL_LV[b];
+  });
+}
+// 選択肢 c が、その装備で出うる同じ系統の中で一番上のレベルか(一番上でなければ表示に「↑」= そのレベル以上 を付ける)
+function tpSeedIsTop_(opts, c) {
+  tpSkillFamInit_();
+  return !opts.some(function (o) { return o !== c && TP_SKILL_FAM[o] === TP_SKILL_FAM[c] && TP_SKILL_LV[o] > TP_SKILL_LV[c]; });
 }
 
 </script>
@@ -1148,7 +1177,7 @@ function tpSeedOptions_(slot) {
   'use strict';
   var LOGIC = document.getElementById('logic').textContent;
   // 計算ロジック(コード.js)をこのページのスコープでも1回だけ読む(GlobalSeed の表示・Worker が使えないときの計算用)
-  var L = new Function(LOGIC + '\n;return {tpJump_:tpJump_,tpVal_:tpVal_,tpMemoPlan_:tpMemoPlan_,tpMemoHtml_:tpMemoHtml_,tpMemoSkills_:tpMemoSkills_,TP_MEMO_BATTLE:TP_MEMO_BATTLE,tpSeedSearch_:tpSeedSearch_,tpSeedCount_:tpSeedCount_,tpSeedOptions_:tpSeedOptions_,TP_SKILL_ROWS:TP_SKILL_ROWS,TP_SKILL_NAMES:TP_SKILL_NAMES,TP_SKILL_PLACE_EN:TP_SKILL_PLACE_EN,TP_SKILL_SUFFIX_EN:TP_SKILL_SUFFIX_EN};')();
+  var L = new Function(LOGIC + '\n;return {tpJump_:tpJump_,tpVal_:tpVal_,tpMemoPlan_:tpMemoPlan_,tpMemoHtml_:tpMemoHtml_,tpMemoSkills_:tpMemoSkills_,TP_MEMO_BATTLE:TP_MEMO_BATTLE,tpSeedSearch_:tpSeedSearch_,tpSeedCount_:tpSeedCount_,tpSeedOptions_:tpSeedOptions_,tpSeedIsTop_:tpSeedIsTop_,TP_SKILL_ROWS:TP_SKILL_ROWS,TP_SKILL_NAMES:TP_SKILL_NAMES,TP_SKILL_PLACE_EN:TP_SKILL_PLACE_EN,TP_SKILL_SUFFIX_EN:TP_SKILL_SUFFIX_EN};')();
   // 素材の並び・既定の目標(2026-10-20 ユーザー指定: 青銅4・琥珀4・錬成粉3・黒銀1・方解石1、許容コストはすべて A)
   var ITEMS = [['青銅の塊', '青銅の塊', 4, 'A', '#6e9bff'], ['琥珀の欠片', '琥珀の欠片', 4, 'A', '#ff9900'], ['下級の錬成粉', '下級の錬成粉', 3, 'A', '#980000'],
     ['黒銀の塊', '黒銀の塊', 1, 'A', '#9900ff'], ['方解石の欠片', '方解石の欠片', 1, 'A', '#6aa84f']];   // 5番目 = 素材名の色(元シート ☆本体☆ L17:L21。青銅 #0000ff・方解石 #274e13 は黒地用に明るく)
@@ -1837,8 +1866,9 @@ function tpSeedOptions_(slot) {
     sd_h_skill: '■ Wanted random skills', sd_opt: 'Also specify gear you dismantle / cut when materials are plentiful.',
     sd_th_no: 'No.', sd_th_item: 'Item', sd_th_fixed: 'Fixed skill', sd_th_want: 'Wanted random skills',
     sd_h_res: '■ Seeds that match (lowest cost first)', sd_limit: 'Max results', sd_run: 'Search',
+    sd_note0: 'Skills marked &ldquo;↑&rdquo; mean that level or higher (e.g. Attack +5↑ = +5, +8 or +15).',
     sd_note1: 'Up to 3 load &amp; return-to-title sets. Each set uses one round-trip route only (N routes need N sets).',
-    sd_note2: '&ldquo;Use&rdquo; puts the recipe into the actions table of the Pickup plan tab and builds the plan.'
+    sd_note2: '&ldquo;Use in plan&rdquo; puts the recipe into the actions table of the Pickup plan tab and builds the plan.'
   };
   function isEn() { return $('lang').checked; }
   function T(ja, en) { return isEn() ? en : ja; }
@@ -1941,7 +1971,8 @@ function tpSeedOptions_(slot) {
         var id = 'sd_' + r[4] + '_' + k;
         return '<select id="' + id + '" data-slot="' + r[4] + '">' + [-1].concat(SD_OPTS[r[4]]).map(function (c) {
           var col = skillColor(c);
-          return '<option value="' + c + '"' + (col ? ' style="color:' + col + (c > 0 ? ';font-weight:bold' : '') + '"' : '') + (String(c) === (keep[id] || '-1') ? ' selected' : '') + '>' + escH(skillName(c)) + '</option>';
+          var up = c > 0 && !L.tpSeedIsTop_(SD_OPTS[r[4]], c) ? '↑' : '';   // そのレベル以上(2026-10-20 ユーザー指定)
+          return '<option value="' + c + '"' + (col ? ' style="color:' + col + (c > 0 ? ';font-weight:bold' : '') + '"' : '') + (String(c) === (keep[id] || '-1') ? ' selected' : '') + '>' + escH(skillName(c)) + up + '</option>';
         }).join('') + '</select>';
       };
       tr.innerHTML = '<td class="fx">' + r[0] + '</td><td><b' + (r[7] ? ' style="color:#e06666"' : '') + '>' + escH(itemName(r)) + '</b><br><span class="place">(' + escH(place) + ')</span></td>' +
@@ -1973,7 +2004,7 @@ function tpSeedOptions_(slot) {
         return circ.charAt(j) + (c[0] < 0 ? T('往復なし', 'no round trip') : escH(rtName(RT[c[0]])) + ' <b>' + (c[1] / 2) + T('往復', c[1] === 2 ? ' round trip' : ' round trips') + '</b>');
       }).join('<br>') : T('(ロードなし)', '(no load)');
       h += '<tr><td class="num">' + (i + 1) + '</td><td class="gs">' + r.gs + '</td><td class="num">' + r.n0 + '</td><td class="num">' + r.cost + '</td><td class="steps">' + steps + '</td><td class="num">' + r.presses + T('回', '') +
-        '</td><td class="num">' + r.pick + T('個', '') + '</td><td><button data-i="' + i + '" title="' + T('この作り方を拾得計画の出力の操作の表に入れて、計画を作る', 'Put this recipe into the actions table of the Pickup plan tab and build the plan') + '">' + T('使う', 'Use') + '</button></td></tr>';
+        '</td><td class="num">' + r.pick + T('個', '') + '</td><td><button data-i="' + i + '" title="' + T('この作り方を拾得計画の出力の操作の表に入れて、計画を作る', 'Put this recipe into the actions table of the Pickup plan tab and build the plan') + '">' + T('拾得計画に使う', 'Use in plan') + '</button></td></tr>';
     });
     for (var e = res.length; e < (SD_LAST ? 0 : sdLimit()); e++) h += '<tr><td class="num">' + (e + 1) + '</td><td class="gs">&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';   // 探す前は空の枠
     $('sd_res').innerHTML = h + '</table>';
