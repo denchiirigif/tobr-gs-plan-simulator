@@ -118,7 +118,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <section class="panel">
 <div class="cols">
 <div class="col">
-<h2 data-i18n="h_ops">■ NewGame までの操作</h2>
+<h2 data-i18n="h_ops">・NewGame までの操作</h2>
 <table class="ops">
 <thead><tr><th data-i18n="th_op">行う操作</th><th data-i18n="th_cnt">行う回数</th><th data-i18n="th_rng">乱数消費</th></tr></thead>
 <tbody>
@@ -142,12 +142,12 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </div>
 </div>
 <div class="col">
-<h2 data-i18n="h_goals">■ トレジャーポイント拾得の目標</h2>
+<h2 data-i18n="h_goals">・トレジャーポイント拾得の目標</h2>
 <table class="goals">
 <thead><tr><th data-i18n="th_mat">拾得素材</th><th data-i18n="th_cap">目標確保数</th><th data-i18n="th_cost">許容立ち寄りコスト</th></tr></thead>
 <tbody id="goals"></tbody>
 </table>
-<h2 class="pur" data-i18n="h_bt">■ リザルトセリフによるExtra RNG Rollsの増分表</h2>
+<h2 class="pur" data-i18n="h_bt">・リザルトセリフによるExtra RNG Rollsの増分表</h2>
 <div class="bt-lead" data-i18n="bt_lead">タイタニアの下記2戦闘で、リザルトセリフ抽選による不定の増分がある。<br>『対魔士1+傭兵1』/『対魔士1+傭兵2』</div>
 <div id="battle" class="battle"></div>
 </div>
@@ -173,7 +173,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <section class="panel">
 <div class="cols">
 <div class="col">
-<h2><span data-i18n="sd_h_skill" id="sd_h_cond">■ ランダムスキル指定</span><span id="sd_h_view" hidden></span></h2>
+<h2><span data-i18n="sd_h_skill" id="sd_h_cond">・ランダムスキル指定</span><span id="sd_h_view" hidden></span></h2>
 <label class="chk" id="sd_back_l" hidden><input type="checkbox" id="sd_back"> <span data-i18n="sd_back">スキル指定に戻る</span></label>
 <label class="chk"><input type="checkbox" id="sd_opt"> <span data-i18n="sd_opt" id="sd_opt_t">分解する装備 / 素材潤沢ならカットする装備 も指定する。</span></label>
 <table class="goals sd-skill">
@@ -182,19 +182,19 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </table>
 </div>
 <div class="col">
-<h2 data-i18n="sd_h_cost">■ コスト設定</h2>
+<h2 data-i18n="sd_h_cost">・コスト設定</h2>
 <table class="goals sd-cost"><tbody>
 <tr><td data-i18n="sd_c_ng">NewGame 押し直し 1回</td><td><input type="number" min="0" step="1" value="1" id="sd_c_ng"></td><td data-i18n="sd_c_load">ロード＆タイトル</td><td><input type="number" min="0" step="1" value="5" id="sd_c_load"></td></tr>
 <tr><td data-i18n="sd_c_half">MAP 移動(半往復ごと)</td><td><input type="number" min="0" step="1" value="1" id="sd_c_half"></td><td data-i18n="sd_c_pick">アイテム拾得</td><td><input type="number" min="0" step="1" value="5" id="sd_c_pick"></td></tr>
 </tbody></table>
-<h2 data-i18n="sd_h_res">■ 条件を満たすシード (コストが低い順)</h2>
+<h2 data-i18n="sd_h_res">・条件を満たすシード (コストが低い順)</h2>
 <div class="actions sd-act"><span data-i18n="sd_limit">最大表示件数</span><input type="number" id="sd_limit" min="1" max="50" step="1" value="5"><button id="sd_run" class="primary" data-i18n="sd_run">探す</button><span id="sd_status"></span></div>
 <div id="sd_res"></div>
 </div>
 </div>
 </section>
 </main>
-<footer data-i18n="stamp">計算ロジック: コード.js 2026-10-20 生成(sha256 81c660b78b72)・ページ作成 2026-10-20</footer>
+<footer data-i18n="stamp">計算ロジック: コード.js 2026-10-20 生成(sha256 81c660b78b72)・ページ作成 2026-10-21</footer>
 <script type="text/plain" id="logic">/**
  * ベルセリア RTA トレジャーポイント拾得計画(NewGame〜ロウライネ)
  * 自動生成: TreasureAnalysis\基準記録\gen_appscript.py(手で直さないこと)  生成日 2026-10-20
@@ -1847,7 +1847,7 @@ function tpSeedIsTop_(opts, c) {
   var I18N = {
     h1: 'Run Memo Builder (Tales of Berseria Remastered RTA &mdash; treasure point pickup plan)',
     lead: 'Enter your actions before NewGame (or n0) and your target counts, then press &ldquo;Build plan&rdquo; to make the run memo (pickup plan table). Everything is calculated in your browser.',
-    h_ops: '■ Actions before NewGame', th_op: 'Action', th_cnt: 'Times', th_rng: 'RNG calls',
+    h_ops: '• Actions before NewGame', th_op: 'Action', th_cnt: 'Times', th_rng: 'RNG calls',
     op_boot: 'Launch &rarr; first title screen (17324)', fixed1: '1 (fixed)',
     op_ld: 'Load a save (including quick load)<br>Choose &ldquo;Return to Title&rdquo; in another save<br>Lose a battle and see the retry screen',
     op_tb: 'In another save: open a treasure chest<br>or examine a treasure point',
@@ -1859,18 +1859,18 @@ function tpSeedIsTop_(opts, c) {
     fn1: '<b class="blue">※1</b>: Load a save point near a location change and adjust by going back and forth between maps.',
     fn2: '<b class="red">※2</b>: Back out of the Grade Shop to the title without doing anything and select NewGame again for another +8662, as many times as you like.',
     fn3: '<b class="pur">※3</b>: When a line plays on the battle result screen, the RNG advances 0&ndash;2 times.',
-    h_goals: '■ Treasure point pickup targets', th_mat: 'Material', th_cap: 'Target count', th_cost: 'Max detour cost',
-    h_bt: '■ Extra RNG rolls from result lines',
+    h_goals: '• Treasure point pickup targets', th_mat: 'Material', th_cap: 'Target count', th_cost: 'Max detour cost',
+    h_bt: '• Extra RNG rolls from result lines',
     bt_lead: 'In the two battles below in Titania, the result-line roll adds an uncertain number of RNG calls.<br>&ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; / &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo;',
     b_run: 'Build plan', b_png1: 'Save PNG (1&times;)', b_png15: 'Save PNG (1.5&times;)', b_reset: 'Reset to defaults',
     skopt: 'Also show the random skills of gear you dismantle / cut when materials are plentiful.',
     n1: '+0 to +4 columns: Extra RNG Rolls (= how many more RNG calls than planned happened between NewGame and Burnack Plateau.)<br>= the sum of<ul><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; (+0~2)</li><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo; (+0~2)</li><li>Pickups (adjusting by picking up treasure points, Fire Ring, etc.) (+1)</li></ul>',
-    stamp: 'Plan logic: コード.js generated 2026-10-20 (sha256 81c660b78b72) / page built 2026-10-20',
+    stamp: 'Plan logic: コード.js generated 2026-10-20 (sha256 81c660b78b72) / page built 2026-10-21',
     tab_plan: 'TP pickup plan', tab_seed: 'Seed finder',
-    sd_h_cost: '■ Cost settings', sd_c_ng: 'NewGame re-press (each)', sd_c_half: 'Map move (per half round trip)', sd_c_load: 'Load &amp; return to title', sd_c_pick: 'Item pickup',
-    sd_h_skill: '■ Wanted random skills', sd_back: 'Back to skill conditions', sd_opt: 'Also specify gear you dismantle / cut when materials are plentiful.',
+    sd_h_cost: '• Cost settings', sd_c_ng: 'NewGame re-press (each)', sd_c_half: 'Map move (per half round trip)', sd_c_load: 'Load &amp; return to title', sd_c_pick: 'Item pickup',
+    sd_h_skill: '• Wanted random skills', sd_back: 'Back to skill conditions', sd_opt: 'Also specify gear you dismantle / cut when materials are plentiful.',
     sd_th_no: 'No.', sd_th_item: 'Item', sd_th_fixed: 'Fixed skill', sd_th_want: 'Wanted random skills',
-    sd_h_res: '■ Seeds that match (lowest cost first)', sd_limit: 'Max results', sd_run: 'Search'
+    sd_h_res: '• Seeds that match (lowest cost first)', sd_limit: 'Max results', sd_run: 'Search'
   };
   function isEn() { return $('lang').checked; }
   function T(ja, en) { return isEn() ? en : ja; }
@@ -1971,7 +1971,7 @@ function tpSeedIsTop_(opts, c) {
     $('sd_h_cond').hidden = !!view; $('sd_h_view').hidden = !view; $('sd_back_l').hidden = !view; $('sd_back').checked = false;
     $('sd_opt_t').innerHTML = view ? T('分解する装備 / 素材潤沢ならカットする装備 のスキルも見る。', 'Also show the skills of gear you dismantle / cut when materials are plentiful.')   // GS のスキル一覧を表示中の文言(2026-10-20 ユーザー指定)
       : T('分解する装備 / 素材潤沢ならカットする装備 も指定する。', I18N.sd_opt);
-    if (view) $('sd_h_view').textContent = T('■ GS ' + view + ' のランダムスキル', '■ Random skills of GS ' + view);
+    if (view) $('sd_h_view').textContent = T('・GS ' + view + ' のランダムスキル', '• Random skills of GS ' + view);
     $('sd_th_want').textContent = view ? T('ランダムスキル(不定)', 'Random skills') : T('ランダムスキル(指定)', 'Wanted random skills');
     tbody.innerHTML = '';
     L.TP_SKILL_ROWS.forEach(function (r) {
@@ -2230,6 +2230,14 @@ function tpSeedIsTop_(opts, c) {
     var r = small.getBoundingClientRect().height / big.getBoundingClientRect().height;   // 縮めると折り返しが変わることがあるので1回だけ合わせ直す
     big.style.zoom = Math.min(1, Math.max(z * r, 0.75));
   }
+  // 見出し(・…)の文字の大きさを全部そろえる(2026-10-21 ユーザー指定): 列を縮めた(zoom)ときは見出しだけ逆に拡大して打ち消す
+  function fixHeads() {
+    document.querySelectorAll('.cols > .col').forEach(function (c) {
+      var z = Number(c.style.zoom) || 1;
+      c.querySelectorAll('h2').forEach(function (h) { h.style.zoom = z === 1 ? '' : String(1 / z); });
+    });
+  }
+  var fitOps0 = fitOps; fitOps = function () { fitOps0(); fixHeads(); };
   fitOps(); window.addEventListener('resize', fitOps);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitOps);
   run();   // 開いたらすぐ既定(または # の条件)で計画を作る
