@@ -19,7 +19,8 @@ nav.tabs{display:flex;gap:4px;padding:6px 16px 0;border-bottom:1px solid var(--l
 nav.tabs .tab{border-radius:6px 6px 0 0;border-bottom:none;padding:6px 18px;color:var(--mut);background:var(--pn);font-weight:bold}
 nav.tabs .tab.on{background:var(--ac);border-color:var(--ac);color:#fff}
 #pg-seed .panel{overflow-x:auto}
-#pg-seed .cols{flex-wrap:nowrap;column-gap:44px}   /* 拾得計画の画面の表と表の間(約44px)にそろえる */
+#pg-seed .cols{flex-wrap:nowrap;column-gap:88px}   /* 拾得計画の画面の表と表の間(88px)にそろえる(2026-10-21 ユーザー指定で 44px → 2倍) */
+#pg-plan .cols{column-gap:72px}   /* 左右の表の間を 88px に(左の列は表より 16px 広い。2026-10-21 ユーザー指定で 44px → 2倍) */
 #pg-seed table.goals,#pg-seed table.sd-res{font-size:12px}   /* 拾得計画の画面の表の文字(12px 前後)にそろえる */
 #pg-seed .cols > .col:first-child{flex:0 0 auto}   /* 左(スキル指定)は縮めない */
 #pg-seed .cols > .col:last-child{flex:1 1 0;min-width:420px}
@@ -166,7 +167,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <label class="chk"><input type="checkbox" id="skopt"> <span data-i18n="skopt">分解する装備 / 素材潤沢ならカットする装備 のランダムスキルも表示する。</span></label>
 <span class="pngs">
 <button id="png_plan" class="primary" disabled data-i18n="b_png_plan">pngで保存 (拾得計画表のみ)</button>
-<button id="png_all" class="primary" disabled data-i18n="b_png_all">pngで保存 (拾得計画表 / ランダムスキル表 / リザルトセリフ表 全て)</button>
+<button id="png_all" disabled data-i18n="b_png_all">pngで保存 (拾得計画表 / ランダムスキル表 / リザルトセリフ表 全て)</button>
 </span>
 </div>
 <div class="memo-wrap"><iframe id="memo" title="本走メモ" scrolling="no"></iframe></div>
