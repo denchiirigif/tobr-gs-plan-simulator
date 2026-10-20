@@ -19,8 +19,8 @@ nav.tabs{display:flex;gap:4px;padding:6px 16px 0;border-bottom:1px solid var(--l
 nav.tabs .tab{border-radius:6px 6px 0 0;border-bottom:none;padding:6px 18px;color:var(--mut);background:var(--pn);font-weight:bold}
 nav.tabs .tab.on{background:var(--ac);border-color:var(--ac);color:#fff}
 #pg-seed .panel{overflow-x:auto}
-#pg-seed .cols{flex-wrap:nowrap;column-gap:88px}   /* 拾得計画の画面の表と表の間(88px)にそろえる(2026-10-21 ユーザー指定で 44px → 2倍) */
-#pg-plan .cols{column-gap:72px}   /* 左右の表の間を 88px に(左の列は表より 16px 広い。2026-10-21 ユーザー指定で 44px → 2倍) */
+#pg-seed .cols{flex-wrap:nowrap;column-gap:66px}   /* 拾得計画の画面の表と表の間(66px)にそろえる(2026-10-21 ユーザー指定で 44px → 1.5倍) */
+#pg-plan .cols{column-gap:50px}   /* 左右の表の間を 66px に(左の列は表より 16px 広い。2026-10-21 ユーザー指定で 44px → 1.5倍) */
 #pg-seed table.goals,#pg-seed table.sd-res{font-size:12px}   /* 拾得計画の画面の表の文字(12px 前後)にそろえる */
 #pg-seed .cols > .col:first-child{flex:0 0 auto}   /* 左(スキル指定)は縮めない */
 #pg-seed .cols > .col:last-child{flex:1 1 0;min-width:420px}
@@ -157,8 +157,8 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </div>
 </div>
 <div class="actions">
-<button id="run" class="primary" data-i18n="b_run">↓計画を出力↓</button>
 <button id="reset" data-i18n="b_reset">↑初期値に戻す↑</button>
+<button id="run" class="primary" data-i18n="b_run">↓計画を出力↓</button>
 <span id="status"></span>
 </div>
 </section>
@@ -979,7 +979,7 @@ function tpMemoBody_(res, how, web) {
   if (web) {   // ウェブページ(2026-10-20 ユーザー指定): 左の欄 = 予測されるランダムスキル(web.skills)、右 = 拾得計画。増分表はメモに入れず、ページの入力欄に出す
     if (web.planOnly) return h1 + '\n\n' + tpMemoPlanTable_(res, en) + '\n';   // PNG「拾得計画テーブルのみ」(2026-10-21)
     return h1 + '\n\n<div class="row"><div class="lc"><div>\n' + (web.battle ? web.battle + '\n' : '') + (web.skills || '') + '\n</div>\n' + (how || '') +   // web.battle = PNG「拾得計画、ランダムスキル、セリフ表」のときだけ増分表を左上に(2026-10-21)
-      '\n</div><div>\n' + tpMemoPlanTable_(res, en) + '\n</div></div>\n';
+      '\n</div><div>\n<h2>&nbsp;</h2>\n' + tpMemoPlanTable_(res, en) + '\n</div></div>\n';   // 空の見出し = 拾得計画の表の上端を左の表(見出しの下)の上端にそろえる(2026-10-21 ユーザー指定)
   }
   return h1 + '\n\n<div class="row"><div class="lc"><div>\n' + TP_MEMO_BATTLE + '\n</div>\n' + (how || '') + '\n</div><div>\n' + tpMemoPlanTable_(res) + '\n</div></div>\n';
 }
