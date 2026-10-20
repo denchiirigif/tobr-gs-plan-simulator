@@ -27,6 +27,9 @@ nav.tabs .tab.on{background:var(--ac);border-color:var(--ac);color:#fff}
 #pg-seed h2[data-i18n="sd_h_res"]{margin-top:18px;padding-top:14px;border-top:1px solid var(--ln)}   /* コスト設定とシードの表の間に区切り線(2026-10-20 ユーザー指定) */   /* 右(結果)で幅を調整する(作り方の列が折り返す) */
 .sd-cost input{width:5em}
 .sd-skill td{white-space:nowrap}
+.sd-skill td.sel .vw{padding:2px 4px;font-weight:bold}
+.sd-skill td.sel .vw.sn{font-weight:normal}
+table.sd-res td.btns button{display:block;width:9.5em;margin:2px 0;white-space:normal;line-height:1.25;padding:2px 6px}   /* 2つのボタンを縦に並べ、長い文言は折り返す */
 .sd-skill td.sel select{display:block;margin:1px 0;width:15em}
 .sd-skill td.fx{text-align:center}
 .sd-skill td.sn{color:#9a9a9a}
@@ -38,7 +41,7 @@ table.sd-res th{background:var(--hd);color:var(--hdfg);white-space:nowrap}
 table.sd-res th.wrap{white-space:normal}
 table.sd-res td.num{text-align:right;font-variant-numeric:tabular-nums}
 table.sd-res td.gs{font-weight:bold;font-size:15px}
-table.sd-res td.steps{white-space:normal;min-width:220px}
+table.sd-res td.steps{white-space:normal;min-width:180px}
 table.sd-res button{padding:2px 10px;font-size:12px}
 .hd{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;justify-content:space-between}
 label.lang{font-size:13px;display:flex;gap:6px;align-items:center;cursor:pointer;border:1px solid var(--ln);border-radius:4px;padding:2px 8px}
@@ -105,7 +108,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <p class="lead" data-i18n="lead">NewGame までの操作(または n0)と目標確保数を入れて「計画を作る」を押すと、本走メモ(拾得計画の表)ができます。計算はすべてこのブラウザの中で行います。</p>
 </header>
 <nav class="tabs">
-<button class="tab on" id="tab_plan" data-i18n="tab_plan">拾得計画の出力</button>
+<button class="tab on" id="tab_plan" data-i18n="tab_plan">TP拾得計画の作成</button>
 <button class="tab" id="tab_seed" data-i18n="tab_seed">シード探し</button>
 </nav>
 <main id="pg-plan">
@@ -167,10 +170,11 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <section class="panel">
 <div class="cols">
 <div class="col">
-<h2 data-i18n="sd_h_skill">■ ランダムスキル指定</h2>
+<h2><span data-i18n="sd_h_skill" id="sd_h_cond">■ ランダムスキル指定</span><span id="sd_h_view" hidden></span></h2>
+<label class="chk" id="sd_back_l" hidden><input type="checkbox" id="sd_back"> <span data-i18n="sd_back">条件指定に戻る</span></label>
 <label class="chk"><input type="checkbox" id="sd_opt"> <span data-i18n="sd_opt">分解する装備 / 素材潤沢ならカットする装備 も指定する。</span></label>
 <table class="goals sd-skill">
-<thead><tr><th data-i18n="sd_th_no">番号</th><th data-i18n="sd_th_item">拾得するアイテム</th><th data-i18n="sd_th_fixed">ランダムスキル(固定)</th><th data-i18n="sd_th_want">ランダムスキル(指定)</th></tr></thead>
+<thead><tr><th data-i18n="sd_th_no">番号</th><th data-i18n="sd_th_item">拾得するアイテム</th><th data-i18n="sd_th_fixed">ランダムスキル(固定)</th><th id="sd_th_want">ランダムスキル(指定)</th></tr></thead>
 <tbody id="sd_rows"></tbody>
 </table>
 </div>
@@ -1175,7 +1179,7 @@ function tpSeedIsTop_(opts, c) {
   'use strict';
   var LOGIC = document.getElementById('logic').textContent;
   // 計算ロジック(コード.js)をこのページのスコープでも1回だけ読む(GlobalSeed の表示・Worker が使えないときの計算用)
-  var L = new Function(LOGIC + '\n;return {tpJump_:tpJump_,tpVal_:tpVal_,tpMemoPlan_:tpMemoPlan_,tpMemoHtml_:tpMemoHtml_,tpMemoSkills_:tpMemoSkills_,TP_MEMO_BATTLE:TP_MEMO_BATTLE,tpSeedSearch_:tpSeedSearch_,tpSeedCount_:tpSeedCount_,tpSeedOptions_:tpSeedOptions_,tpSeedIsTop_:tpSeedIsTop_,TP_SKILL_ROWS:TP_SKILL_ROWS,TP_SKILL_NAMES:TP_SKILL_NAMES,TP_SKILL_PLACE_EN:TP_SKILL_PLACE_EN,TP_SKILL_SUFFIX_EN:TP_SKILL_SUFFIX_EN};')();
+  var L = new Function(LOGIC + '\n;return {tpJump_:tpJump_,tpVal_:tpVal_,tpMemoPlan_:tpMemoPlan_,tpMemoHtml_:tpMemoHtml_,tpMemoSkills_:tpMemoSkills_,TP_MEMO_BATTLE:TP_MEMO_BATTLE,tpSeedSearch_:tpSeedSearch_,tpSeedCount_:tpSeedCount_,tpSeedOptions_:tpSeedOptions_,tpSeedIsTop_:tpSeedIsTop_,tpSkillCode_:tpSkillCode_,TP_SKILL_ROWS:TP_SKILL_ROWS,TP_SKILL_NAMES:TP_SKILL_NAMES,TP_SKILL_PLACE_EN:TP_SKILL_PLACE_EN,TP_SKILL_SUFFIX_EN:TP_SKILL_SUFFIX_EN};')();
   // 素材の並び・既定の目標(2026-10-20 ユーザー指定: 青銅4・琥珀4・錬成粉3・黒銀1・方解石1、許容コストはすべて A)
   var ITEMS = [['青銅の塊', '青銅の塊', 4, 'A', '#6e9bff'], ['琥珀の欠片', '琥珀の欠片', 4, 'A', '#ff9900'], ['下級の錬成粉', '下級の錬成粉', 3, 'A', '#980000'],
     ['黒銀の塊', '黒銀の塊', 1, 'A', '#9900ff'], ['方解石の欠片', '方解石の欠片', 1, 'A', '#6aa84f']];   // 5番目 = 素材名の色(元シート ☆本体☆ L17:L21。青銅 #0000ff・方解石 #274e13 は黒地用に明るく)
@@ -1859,9 +1863,9 @@ function tpSeedIsTop_(opts, c) {
     skopt: 'Also show the random skills of gear you dismantle / cut when materials are plentiful.',
     n1: '+0 to +4 columns: Extra RNG Rolls (= how many more RNG calls than planned happened between NewGame and Burnack Plateau.)<br>= the sum of<ul><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; (+0~2)</li><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo; (+0~2)</li><li>Pickups (adjusting by picking up treasure points, Fire Ring, etc.) (+1)</li></ul>',
     stamp: 'Plan logic: コード.js generated 2026-10-20 (sha256 81c660b78b72) / page built 2026-10-20',
-    tab_plan: 'Pickup plan', tab_seed: 'Seed finder',
+    tab_plan: 'TP pickup plan', tab_seed: 'Seed finder',
     sd_h_cost: '■ Cost settings', sd_c_ng: 'NewGame re-press (each)', sd_c_half: 'Map move (per half round trip)', sd_c_load: 'Load &amp; return to title', sd_c_pick: 'Item pickup',
-    sd_h_skill: '■ Wanted random skills', sd_opt: 'Also specify gear you dismantle / cut when materials are plentiful.',
+    sd_h_skill: '■ Wanted random skills', sd_back: 'Back to conditions', sd_opt: 'Also specify gear you dismantle / cut when materials are plentiful.',
     sd_th_no: 'No.', sd_th_item: 'Item', sd_th_fixed: 'Fixed skill', sd_th_want: 'Wanted random skills',
     sd_h_res: '■ Seeds that match (lowest cost first)', sd_limit: 'Max results', sd_run: 'Search'
   };
@@ -1950,15 +1954,19 @@ function tpSeedIsTop_(opts, c) {
     var base = r[1].replace(/\(.*\)$/, ''), suf = r[1].slice(base.length);
     return (TP_EN.items[base] || base) + (L.TP_SKILL_SUFFIX_EN[suf] || suf);
   }
-  var SD_DEF = null;   // 既定の指定 { セレクトの id: スキル番号 }
-  function buildSeedRows() {   // スキル指定の表(言語を変えたときも作り直す。選んだ値は残す)
-    var tbody = $('sd_rows'), keep = {};
-    if (!SD_DEF) {
-      var c = function (n) { return L.TP_SKILL_NAMES.indexOf(n); };
-      SD_DEF = { sd_0_0: c('攻撃力＋5'), sd_26_0: c('BS時のBG増加量1.1倍'), sd_20_0: c('BS時のBG増加量1.1倍') };
-      Object.keys(SD_DEF).forEach(function (k) { keep[k] = String(SD_DEF[k]); });
+  var SD_SEL = null;    // 選んだ条件 { セレクトの id: スキル番号(文字列) }。既定 = ② 攻撃力＋5、⑧⑭ BS1.1倍↑(2026-10-20 ユーザー指定)
+  var SD_VIEW = null;   // 「このGSでのランダムスキル一覧を見る」で表示中の GS(null = 条件指定)
+  function buildSeedRows() {   // 左の表(言語を変えたとき・一覧表示を切り替えたときも作り直す。選んだ条件は SD_SEL に残す)
+    var tbody = $('sd_rows'), keep;
+    if (!SD_SEL) {
+      var c = function (n) { return String(L.TP_SKILL_NAMES.indexOf(n)); };
+      SD_SEL = { sd_0_0: c('攻撃力＋5'), sd_26_0: c('BS時のBG増加量1.1倍'), sd_20_0: c('BS時のBG増加量1.1倍') };
     }
-    tbody.querySelectorAll('select').forEach(function (s) { keep[s.id] = s.value; });
+    keep = SD_SEL;
+    var view = SD_VIEW;
+    $('sd_h_cond').hidden = !!view; $('sd_h_view').hidden = !view; $('sd_back_l').hidden = !view; $('sd_back').checked = false;
+    if (view) $('sd_h_view').textContent = T('■ GS ' + view + ' のランダムスキル', '■ Random skills of GS ' + view);
+    $('sd_th_want').textContent = view ? T('ランダムスキル(不定)', 'Random skills') : T('ランダムスキル(指定)', 'Wanted random skills');
     tbody.innerHTML = '';
     L.TP_SKILL_ROWS.forEach(function (r) {
       if (r[4] === null) return;   // ①レジストリングはランダムスキルが付かない
@@ -1976,17 +1984,21 @@ function tpSeedIsTop_(opts, c) {
           return '<option value="' + c + '"' + (col ? ' style="color:' + col + (c > 0 ? ';font-weight:bold' : '') + '"' : '') + (String(c) === (keep[id] || '-1') ? ' selected' : '') + '>' + escH(skillName(c)) + up + '</option>';
         }).join('') + '</select>';
       };
+      var vw = function (k) {   // 一覧表示: その GS で付くスキル(色はプルダウンと同じ)
+        var c = L.tpSkillCode_(view, r[4] + k), col = skillColor(c);
+        return '<div class="vw' + (c === 0 ? ' sn' : '') + '"' + (col ? ' style="color:' + col + '"' : '') + '>' + escH(skillName(c)) + '</div>';
+      };
       tr.innerHTML = '<td class="fx">' + r[0] + '</td><td><b' + (r[7] ? ' style="color:#e06666"' : '') + '>' + escH(itemName(r)) + '</b><br><span class="place">(' + escH(place) + ')</span></td>' +
-        '<td class="fx' + (r[3] === 'なし' ? ' sn' : '') + '">' + escH(fixed) + '</td><td class="sel">' + sel(0) + sel(1) + '</td>';
+        '<td class="fx' + (r[3] === 'なし' ? ' sn' : '') + '">' + escH(fixed) + '</td><td class="sel">' + (view ? vw(0) + vw(1) : sel(0) + sel(1)) + '</td>';
       tbody.appendChild(tr);
     });
-    tbody.querySelectorAll('select').forEach(function (sel) { paintSelect(sel); sel.addEventListener('change', function () { paintSelect(sel); }); });
+    tbody.querySelectorAll('select').forEach(function (sel) { paintSelect(sel); sel.addEventListener('change', function () { SD_SEL[sel.id] = sel.value; paintSelect(sel); }); });
   }
   function seedConds() {
     var conds = [];
     L.TP_SKILL_ROWS.forEach(function (r) {
       if (r[4] === null || (r[7] && !$('sd_opt').checked)) return;
-      var a = Number($('sd_' + r[4] + '_0').value), b = Number($('sd_' + r[4] + '_1').value);
+      var a = Number(SD_SEL['sd_' + r[4] + '_0'] || -1), b = Number(SD_SEL['sd_' + r[4] + '_1'] || -1);
       if (a >= 0 || b >= 0) conds.push({ slot: r[4], want: [a, b] });
     });
     return conds;
@@ -2005,11 +2017,12 @@ function tpSeedIsTop_(opts, c) {
         return circ.charAt(j) + (c[0] < 0 ? T('往復なし', 'no round trip') : escH(rtName(RT[c[0]])) + ' <b>' + (c[1] / 2) + T('往復', c[1] === 2 ? ' round trip' : ' round trips') + '</b>');
       }).join('<br>') : T('(ロードなし)', '(no load)');
       h += '<tr><td class="num">' + (i + 1) + '</td><td class="gs">' + r.gs + '</td><td class="num">' + r.n0 + '</td><td class="num">' + r.cost + '</td><td class="steps">' + steps + '</td><td class="num">' + r.presses + T('回', '') +
-        '</td><td class="num">' + r.pick + T('個', '') + '</td><td><button data-i="' + i + '" title="' + T('この作り方を拾得計画の出力の操作の表に入れて、計画を作る', 'Put this recipe into the actions table of the Pickup plan tab and build the plan') + '">' + T('拾得計画に使う', 'Use in plan') + '</button></td></tr>';
+        '</td><td class="num">' + r.pick + T('個', '') + '</td><td class="btns"><button data-i="' + i + '" title="' + T('この作り方を拾得計画の出力の操作の表に入れて、計画を作る', 'Put this recipe into the actions table of the Pickup plan tab and build the plan') + '">' + T('拾得計画に使う', 'Use in plan') + '</button><button data-v="' + r.gs + '">' + T('このGSでのランダムスキル一覧を見る', 'Show random skills of this GS') + '</button></td></tr>';
     });
     for (var e = res.length; e < (SD_LAST ? 0 : sdLimit()); e++) h += '<tr><td class="num">' + (e + 1) + '</td><td class="gs">&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';   // 探す前は空の枠
     $('sd_res').innerHTML = h + '</table>';
-    $('sd_res').querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { useRecipe(res[Number(b.dataset.i)]); }); });
+    $('sd_res').querySelectorAll('button[data-i]').forEach(function (b) { b.addEventListener('click', function () { useRecipe(res[Number(b.dataset.i)]); }); });
+    $('sd_res').querySelectorAll('button[data-v]').forEach(function (b) { b.addEventListener('click', function () { SD_VIEW = Number(b.dataset.v); buildSeedRows(); }); });
   }
   function runSeed() {
     var num = function (id) { var v = Number($(id).value); return v >= 0 ? v : 0; };
@@ -2145,6 +2158,7 @@ function tpSeedIsTop_(opts, c) {
   $('tab_plan').addEventListener('click', function () { showTab('plan'); });
   $('tab_seed').addEventListener('click', function () { showTab('seed'); });
   $('sd_run').addEventListener('click', runSeed);
+  $('sd_back').addEventListener('change', function () { if ($('sd_back').checked) { SD_VIEW = null; buildSeedRows(); } });   // 条件指定に戻る(選んでいた条件は残す)
   $('sd_limit').addEventListener('input', function () { if (!SD_LAST) showSeeds(); });
   $('sd_opt').addEventListener('change', function () { document.querySelectorAll('#sd_rows tr.sd-optrow').forEach(function (tr) { tr.hidden = !$('sd_opt').checked; }); });
   $('lang').addEventListener('change', function () {   // 言語の切り替え: 計算し直さずに表示だけ作り直す
