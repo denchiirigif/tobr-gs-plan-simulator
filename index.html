@@ -174,8 +174,8 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <div class="cols">
 <div class="col">
 <h2><span data-i18n="sd_h_skill" id="sd_h_cond">■ ランダムスキル指定</span><span id="sd_h_view" hidden></span></h2>
-<label class="chk" id="sd_back_l" hidden><input type="checkbox" id="sd_back"> <span data-i18n="sd_back">条件指定に戻る</span></label>
-<label class="chk"><input type="checkbox" id="sd_opt"> <span data-i18n="sd_opt">分解する装備 / 素材潤沢ならカットする装備 も指定する。</span></label>
+<label class="chk" id="sd_back_l" hidden><input type="checkbox" id="sd_back"> <span data-i18n="sd_back">スキル指定に戻る</span></label>
+<label class="chk"><input type="checkbox" id="sd_opt"> <span data-i18n="sd_opt" id="sd_opt_t">分解する装備 / 素材潤沢ならカットする装備 も指定する。</span></label>
 <table class="goals sd-skill">
 <thead><tr><th data-i18n="sd_th_no">番号</th><th data-i18n="sd_th_item">拾得するアイテム</th><th data-i18n="sd_th_fixed">ランダムスキル(固定)</th><th id="sd_th_want">ランダムスキル(指定)</th></tr></thead>
 <tbody id="sd_rows"></tbody>
@@ -1868,7 +1868,7 @@ function tpSeedIsTop_(opts, c) {
     stamp: 'Plan logic: コード.js generated 2026-10-20 (sha256 81c660b78b72) / page built 2026-10-20',
     tab_plan: 'TP pickup plan', tab_seed: 'Seed finder',
     sd_h_cost: '■ Cost settings', sd_c_ng: 'NewGame re-press (each)', sd_c_half: 'Map move (per half round trip)', sd_c_load: 'Load &amp; return to title', sd_c_pick: 'Item pickup',
-    sd_h_skill: '■ Wanted random skills', sd_back: 'Back to conditions', sd_opt: 'Also specify gear you dismantle / cut when materials are plentiful.',
+    sd_h_skill: '■ Wanted random skills', sd_back: 'Back to skill conditions', sd_opt: 'Also specify gear you dismantle / cut when materials are plentiful.',
     sd_th_no: 'No.', sd_th_item: 'Item', sd_th_fixed: 'Fixed skill', sd_th_want: 'Wanted random skills',
     sd_h_res: '■ Seeds that match (lowest cost first)', sd_limit: 'Max results', sd_run: 'Search'
   };
@@ -1969,6 +1969,8 @@ function tpSeedIsTop_(opts, c) {
     var view = SD_VIEW;
     document.querySelector('.sd-skill').classList.toggle('viewing', !!view);
     $('sd_h_cond').hidden = !!view; $('sd_h_view').hidden = !view; $('sd_back_l').hidden = !view; $('sd_back').checked = false;
+    $('sd_opt_t').innerHTML = view ? T('分解する装備 / 素材潤沢ならカットする装備 のスキルも見る。', 'Also show the skills of gear you dismantle / cut when materials are plentiful.')   // GS のスキル一覧を表示中の文言(2026-10-20 ユーザー指定)
+      : T('分解する装備 / 素材潤沢ならカットする装備 も指定する。', I18N.sd_opt);
     if (view) $('sd_h_view').textContent = T('■ GS ' + view + ' のランダムスキル', '■ Random skills of GS ' + view);
     $('sd_th_want').textContent = view ? T('ランダムスキル(不定)', 'Random skills') : T('ランダムスキル(指定)', 'Wanted random skills');
     tbody.innerHTML = '';
