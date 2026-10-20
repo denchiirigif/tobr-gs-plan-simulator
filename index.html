@@ -18,18 +18,24 @@ header{padding:12px 16px 4px}
 nav.tabs{display:flex;gap:4px;padding:6px 16px 0;border-bottom:1px solid var(--ln);margin:0 16px}
 nav.tabs .tab{border-radius:6px 6px 0 0;border-bottom:none;padding:6px 18px;color:var(--mut);background:var(--pn);font-weight:bold}
 nav.tabs .tab.on{background:var(--ac);border-color:var(--ac);color:#fff}
+#pg-seed .panel{overflow-x:auto}
+#pg-seed .cols{flex-wrap:nowrap}
+#pg-seed .cols > .col:first-child{flex:0 0 auto}   /* 左(スキル指定)は縮めない */
+#pg-seed .cols > .col:last-child{flex:1 1 0;min-width:420px}   /* 右(結果)で幅を調整する(作り方の列が折り返す) */
 .sd-cost input{width:5em}
 .sd-skill td{white-space:nowrap}
-.sd-skill td.sel select{display:block;margin:1px 0;width:16em}
+.sd-skill td.sel select{display:block;margin:1px 0;width:15em}
 .sd-skill td.fx{text-align:center}
 .sd-skill td.sn{color:#9a9a9a}
 .sd-skill .place{color:var(--mut);font-size:11px}
 .sd-act input{width:4.5em}
 table.sd-res{border-collapse:collapse;font-size:13px;margin-top:8px}
 table.sd-res th,table.sd-res td{border:1px solid var(--ln);padding:3px 6px;white-space:nowrap}
-table.sd-res th{background:var(--hd);color:var(--hdfg)}
+table.sd-res th{background:var(--hd);color:var(--hdfg);white-space:nowrap}
+table.sd-res th.wrap{white-space:normal}
 table.sd-res td.num{text-align:right;font-variant-numeric:tabular-nums}
 table.sd-res td.gs{font-weight:bold;font-size:15px}
+table.sd-res td.steps{white-space:normal;min-width:220px}
 table.sd-res button{padding:2px 10px;font-size:12px}
 .hd{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;justify-content:space-between}
 label.lang{font-size:13px;display:flex;gap:6px;align-items:center;cursor:pointer;border:1px solid var(--ln);border-radius:4px;padding:2px 8px}
@@ -178,7 +184,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <div id="sd_res"></div>
 <div class="fn">
 <p data-i18n="sd_note1">ロード＆タイトルは最大3セット。1セットで往復するのは1か所だけ(Nか所で往復するならロード＆タイトルも Nセット)。</p>
-<p data-i18n="sd_note2">「この作り方を使う」を押すと、拾得計画の出力の操作の表にその作り方が入り、計画を作ります。</p>
+<p data-i18n="sd_note2">「使う」を押すと、拾得計画の出力の操作の表にその作り方が入り、計画を作ります。</p>
 </div>
 </div>
 </div>
@@ -1832,7 +1838,7 @@ function tpSeedOptions_(slot) {
     sd_th_no: 'No.', sd_th_item: 'Item', sd_th_fixed: 'Fixed skill', sd_th_want: 'Wanted random skills',
     sd_h_res: '■ Seeds that match (lowest cost first)', sd_limit: 'Max results', sd_run: 'Search',
     sd_note1: 'Up to 3 load &amp; return-to-title sets. Each set uses one round-trip route only (N routes need N sets).',
-    sd_note2: '&ldquo;Use this&rdquo; puts the recipe into the actions table of the Pickup plan tab and builds the plan.'
+    sd_note2: '&ldquo;Use&rdquo; puts the recipe into the actions table of the Pickup plan tab and builds the plan.'
   };
   function isEn() { return $('lang').checked; }
   function T(ja, en) { return isEn() ? en : ja; }
@@ -1898,10 +1904,21 @@ function tpSeedOptions_(slot) {
   function showTab(name) {
     $('pg-plan').hidden = name !== 'plan'; $('pg-seed').hidden = name !== 'seed';
     $('tab_plan').classList.toggle('on', name === 'plan'); $('tab_seed').classList.toggle('on', name === 'seed');
-    if (name === 'plan') { fitOps(); fitMemo(); } else buildSeedRows();
+    if (name === 'plan') { fitOps(); fitMemo(); } else { buildSeedRows(); showSeeds(); }
   }
   // ---- シード探し(2026-10-20)。計算は seed_search.js ----
   var SD_OPTS = {};   // 不定の枠の先頭 → 出うるスキル番号(一度だけ数える)
+  // プルダウンの文字色(スキルの種類ごと。名前は日本語で判定)
+  var SKILL_COLORS = [[/^攻撃力/, '#ff4040'], [/^BS時のBG増加量/, '#ff4fa3'], [/^防御力/, '#6ec6ff'], [/^術攻撃/, '#ffad55'], [/^術防御/, '#a9a1ff'],
+    [/^最大HP/, '#7fd17f'], [/^集中力/, '#ffe066'], [/^敵撃破時にHP回復/, '#8fe3c8'], [/^HP吸収/, '#d0aaff'], [/効果を\d+%軽減$/, '#c9b48a'], [/^対「/, '#e0a070']];
+  function skillColor(c) {
+    if (c < 0) return '';
+    if (c === 0) return '#9a9a9a';
+    var n = L.TP_SKILL_NAMES[c];
+    for (var i = 0; i < SKILL_COLORS.length; i++) if (SKILL_COLORS[i][0].test(n)) return SKILL_COLORS[i][1];
+    return '';
+  }
+  function paintSelect(sel) { sel.style.color = skillColor(Number(sel.value)) || ''; sel.style.fontWeight = Number(sel.value) > 0 ? 'bold' : ''; }
   function skillName(c) { return c < 0 ? T('指定なし', 'Any') : c === 0 ? T('なし', 'None') : isEn() ? TP_EN.skills[(c < 10 ? '0' : '') + c] || L.TP_SKILL_NAMES[c] : L.TP_SKILL_NAMES[c]; }
   function itemName(r) {
     if (!isEn()) return r[1];
@@ -1923,13 +1940,15 @@ function tpSeedOptions_(slot) {
       var sel = function (k) {
         var id = 'sd_' + r[4] + '_' + k;
         return '<select id="' + id + '" data-slot="' + r[4] + '">' + [-1].concat(SD_OPTS[r[4]]).map(function (c) {
-          return '<option value="' + c + '"' + (String(c) === (keep[id] || '-1') ? ' selected' : '') + '>' + escH(skillName(c)) + '</option>';
+          var col = skillColor(c);
+          return '<option value="' + c + '"' + (col ? ' style="color:' + col + (c > 0 ? ';font-weight:bold' : '') + '"' : '') + (String(c) === (keep[id] || '-1') ? ' selected' : '') + '>' + escH(skillName(c)) + '</option>';
         }).join('') + '</select>';
       };
       tr.innerHTML = '<td class="fx">' + r[0] + '</td><td><b' + (r[7] ? ' style="color:#e06666"' : '') + '>' + escH(itemName(r)) + '</b><br><span class="place">(' + escH(place) + ')</span></td>' +
         '<td class="fx' + (r[3] === 'なし' ? ' sn' : '') + '">' + escH(fixed) + '</td><td class="sel">' + sel(0) + sel(1) + '</td>';
       tbody.appendChild(tr);
     });
+    tbody.querySelectorAll('select').forEach(function (sel) { paintSelect(sel); sel.addEventListener('change', function () { paintSelect(sel); }); });
   }
   function seedConds() {
     var conds = [];
@@ -1942,27 +1961,28 @@ function tpSeedOptions_(slot) {
   }
   var SD_LAST = null;
   function rtName(r) { return isEn() ? (TP_EN.rt[r.pa] || r.pa) + ' (' + r.a + ') \u2192 ' + (TP_EN.rt[r.pb] || r.pb) + ' (' + r.b + ')' : r.pa + '(' + r.a + ') → ' + r.pb + '(' + r.b + ')'; }
+  function sdLimit() { return Math.min(50, Math.max(1, Math.floor(Number($('sd_limit').value)) || 5)); }
   function showSeeds() {
-    if (!SD_LAST) return;
-    var res = SD_LAST.res, circ = '①②③';
-    $('sd_status').textContent = T('条件に合う GS: ' + SD_LAST.count + ' 個(65536 個中)', 'Matching GS: ' + SD_LAST.count + ' of 65536');
-    if (!res.length) { $('sd_res').innerHTML = '<p>' + T('この範囲の操作では見つかりませんでした。', 'No seed found within these actions.') + '</p>'; return; }
-    var h = '<table class="sd-res"><tr><th>#</th><th>GS</th><th>n0</th><th>' + T('コスト', 'Cost') + '</th><th>' + T('ロード → 往復 → タイトルに戻る', 'Load &rarr; round trips &rarr; title') +
-      '</th><th>' + T('NG押し直し', 'NG re-press') + '</th><th>' + T('拾得', 'Pickups') + '</th><th></th></tr>';
+    var res = SD_LAST ? SD_LAST.res : [], circ = '①②③';
+    if (SD_LAST) $('sd_status').textContent = T('条件に合う GS: ' + SD_LAST.count + ' 個(65536 個中)', 'Matching GS: ' + SD_LAST.count + ' of 65536');
+    if (SD_LAST && !res.length) { $('sd_res').innerHTML = '<p>' + T('この範囲の操作では見つかりませんでした。', 'No seed found within these actions.') + '</p>'; return; }
+    var h = '<table class="sd-res"><tr><th>#</th><th>GS</th><th>n0</th><th>' + T('コスト', 'Cost') + '</th><th class="wrap">' + T('ロード → 往復 → タイトルに戻る', 'Load &rarr; round trips &rarr; title') +
+      '</th><th class="wrap">' + T('NG押し直し', 'NG re-press') + '</th><th>' + T('拾得', 'Pickups') + '</th><th></th></tr>';
     res.forEach(function (r, i) {
       var steps = r.loads.length ? r.loads.map(function (c, j) {
         return circ.charAt(j) + (c[0] < 0 ? T('往復なし', 'no round trip') : escH(rtName(RT[c[0]])) + ' <b>' + (c[1] / 2) + T('往復', c[1] === 2 ? ' round trip' : ' round trips') + '</b>');
       }).join('<br>') : T('(ロードなし)', '(no load)');
-      h += '<tr><td class="num">' + (i + 1) + '</td><td class="gs">' + r.gs + '</td><td class="num">' + r.n0 + '</td><td class="num">' + r.cost + '</td><td>' + steps + '</td><td class="num">' + r.presses + T('回', '') +
-        '</td><td class="num">' + r.pick + T('個', '') + '</td><td><button data-i="' + i + '">' + T('この作り方を使う', 'Use this') + '</button></td></tr>';
+      h += '<tr><td class="num">' + (i + 1) + '</td><td class="gs">' + r.gs + '</td><td class="num">' + r.n0 + '</td><td class="num">' + r.cost + '</td><td class="steps">' + steps + '</td><td class="num">' + r.presses + T('回', '') +
+        '</td><td class="num">' + r.pick + T('個', '') + '</td><td><button data-i="' + i + '" title="' + T('この作り方を拾得計画の出力の操作の表に入れて、計画を作る', 'Put this recipe into the actions table of the Pickup plan tab and build the plan') + '">' + T('使う', 'Use') + '</button></td></tr>';
     });
+    for (var e = res.length; e < (SD_LAST ? 0 : sdLimit()); e++) h += '<tr><td class="num">' + (e + 1) + '</td><td class="gs">&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';   // 探す前は空の枠
     $('sd_res').innerHTML = h + '</table>';
     $('sd_res').querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { useRecipe(res[Number(b.dataset.i)]); }); });
   }
   function runSeed() {
     var num = function (id) { var v = Number($(id).value); return v >= 0 ? v : 0; };
     var cost = { ng: num('sd_c_ng'), half: num('sd_c_half'), load: num('sd_c_load'), pick: num('sd_c_pick') };
-    var limit = Math.min(50, Math.max(1, Math.floor(num('sd_limit')) || 5)), conds = seedConds();
+    var limit = sdLimit(), conds = seedConds();
     $('sd_status').textContent = T('探しています…', 'Searching...');
     setTimeout(function () {
       try { SD_LAST = { res: L.tpSeedSearch_(conds, RT, cost, limit), count: L.tpSeedCount_(conds) }; showSeeds(); }
@@ -2093,6 +2113,7 @@ function tpSeedOptions_(slot) {
   $('tab_plan').addEventListener('click', function () { showTab('plan'); });
   $('tab_seed').addEventListener('click', function () { showTab('seed'); });
   $('sd_run').addEventListener('click', runSeed);
+  $('sd_limit').addEventListener('input', function () { if (!SD_LAST) showSeeds(); });
   $('sd_opt').addEventListener('change', function () { document.querySelectorAll('#sd_rows tr.sd-optrow').forEach(function (tr) { tr.hidden = !$('sd_opt').checked; }); });
   $('lang').addEventListener('change', function () {   // 言語の切り替え: 計算し直さずに表示だけ作り直す
     relabel();
