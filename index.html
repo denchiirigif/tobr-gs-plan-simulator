@@ -72,6 +72,7 @@ table.goals input{width:4.5em}
 table.ops td.op select{max-width:100%}
 table.ops td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 table.ops td.cnt{white-space:nowrap;text-align:center}   /* 行う回数の列は中央ぞろえ(2026-10-21 ユーザー指定。n0 の行は右ぞろえのまま) */
+table.ops td.cnt select{width:100%;box-sizing:border-box;text-align-last:center}   /* 行う回数のプルダウンは枠いっぱい(往復の行と同じ幅)・中の文字は中央(2026-10-21 ユーザー指定) */
 table.ops td.fix{background:#3a3d42;font-weight:bold}
 table.ops td.res{background:#4f633b;font-weight:bold}   /* 使う n0 / GlobalSeed の行(見出しも)。灰色に近い、くすんだ黄緑(2026-10-20 ユーザー指定) */
 table.ops td.res b{font-size:15px}
@@ -886,7 +887,7 @@ var TP_MEMO_STYLE = '<style>\n' +
   '.lk{font-size:11px}\n' +
   '.vk{font-size:11px;color:var(--mut);text-align:center}\n' +
   'th.pk{font-weight:bold;color:var(--fg)}\n' +
-  'td.kh{color:var(--fg);text-align:center;font-size:11px;border:0;white-space:nowrap!important;max-width:none!important}td.kh0{border:0}.tk{color:#ff9933}.pc{margin-top:5.5px}\n' +   /* 左の見出し(上 6px)の下 = 左の表の上端に、拾得計画の表の見出し行(ID…)の上端がくる値(2026-10-21 実測) */   /* +0〜+4 の上の見出し(2026-10-21) */
+  '.tk{color:#ff9933}\n' +   /* 増分表の「特2」など(2026-10-21) */
   '.nt{font-size:11px;margin-top:3px}.warn{color:var(--warn);font-weight:bold}\n' +
   '.row{display:flex;gap:10px;align-items:stretch}\n' +
   '.lc{display:flex;flex-direction:column;justify-content:space-between;width:min-content}\n' +
@@ -920,12 +921,12 @@ var TP_MEMO_TXT = {
     kw: 'ゼクソン港 倉庫の琥珀の宝箱(エレノア①前)', k9: '⑨古びた槍(ヴェスター坑道 D09)', kt: '⑩トランクィッロ(カドニクス港、青銅3個未満なら回収)',
     kb: '⑪バッドソーンズ(レニードの街1回目、青銅2個未満なら回収)',
     warn: '上記の計画表に書かれていないトレジャーポイントは、光っていても拾わないでください。', free: '同じフロア内のトレジャーポイントであれば拾う順番は自由です。',
-    h1: '( 『傭兵1 / 傭兵2 / 拾得』 での増分合計 )', title: '本走メモ' },   // h1 = +0〜+4 の列の上の見出し(2026-10-21 ユーザー指定で GS の行から移した)
+    title: '本走メモ' },   // 「進行合計 = …」の見出しは 2026-10-21 ユーザー指定で削除(ページ下の注記に同じ説明がある)
   en: { hdr: ['ID', 'Location', 'Visit', 'Where to look'], total: 'Total (Bronze / Amber / Silver / Powder / Calcite)', take: 'Take', skip: 'Skip',
     kw: 'Port Zekson warehouse Amber chest (before Eleanor 1)', k9: '⑨ Worn Spear (Vester Tunnels D09)', kt: '⑩ Tranquillo (Port Cadnix; take if Bronze &lt; 3)',
     kb: '⑪ Thorny Waistcoat (Reneed, 1st visit; take if Bronze &lt; 2)',
     warn: 'Do not pick up any treasure point not listed in the plan above, even if it glows.', free: 'Within the same floor, you may pick up the listed treasure points in any order.',
-    h1: '( Extra rolls from &ldquo;Mercenary 1 / Mercenary 2 / pickups&rdquo; )', title: 'Run Memo' }
+    title: 'Run Memo' }
 };
 function tpMemoPlanTable_(res, en) {
   var T = TP_MEMO_TXT[en ? 'en' : 'ja'];
@@ -960,7 +961,6 @@ function tpMemoPlanTable_(res, en) {
     return K.map(function (k) { var on = res[k][key] === '回収'; return '<td class="' + (on ? cls : '') + '">' + (on ? T.take : T.skip) + '</td>'; }).join('');
   }
   return '<table>\n' +
-    '<tr class="kr"><td colspan="4" class="kh0"></td><td colspan="5" class="kh">' + T.h1 + '</td></tr>\n' +   // +0〜+4 の列が何かの見出し(2026-10-21 ユーザー指定。白)
     '<tr>' + T.hdr.map(function (h) { return '<th>' + h + '</th>'; }).join('') + K.map(function (k) { return '<th class="pk">+' + k + '</th>'; }).join('') + '</tr>\n' +
     rows.join('\n') + '\n' +
     '<tfoot><tr><td colspan="4">' + T.total + '</td>' + K.map(function (k) { return '<td>' + res[k].cnt + '</td>'; }).join('') + '</tr>\n' +
@@ -991,7 +991,7 @@ function tpMemoBody_(res, how, web) {
   if (web) {   // ウェブページ(2026-10-20 ユーザー指定): 左の欄 = 予測されるランダムスキル(web.skills)、右 = 拾得計画。増分表はメモに入れず、ページの入力欄に出す
     if (web.planOnly) return h1 + '\n\n' + tpMemoPlanTable_(res, en) + '\n';   // PNG「拾得計画テーブルのみ」(2026-10-21)
     return h1 + '\n\n<div class="row"><div class="lc"><div>\n' + (web.battle ? web.battle + '\n' : '') + (web.skills || '') + '\n</div>\n' + (how || '') +   // web.battle = PNG「拾得計画、ランダムスキル、セリフ表」のときだけ増分表を左上に(2026-10-21)
-      '\n</div><div class="pc">\n' + tpMemoPlanTable_(res, en) + '\n</div></div>\n';   // pc = 拾得計画の表の見出し行(ID…)の上端を左の表の上端にそろえる(2026-10-21 ユーザー指定)
+      '\n</div><div>\n<h2>&nbsp;</h2>\n' + tpMemoPlanTable_(res, en) + '\n</div></div>\n';   // 空の見出し = 拾得計画の表の上端を左の表(見出しの下)の上端にそろえる(2026-10-21 ユーザー指定)
   }
   return h1 + '\n\n<div class="row"><div class="lc"><div>\n' + TP_MEMO_BATTLE + '\n</div>\n' + (how || '') + '\n</div><div>\n' + tpMemoPlanTable_(res) + '\n</div></div>\n';
 }
@@ -1214,7 +1214,7 @@ function tpSeedIsTop_(opts, c) {
   // 素材の並び・既定の目標(2026-10-20 ユーザー指定: 青銅4・琥珀4・錬成粉3・黒銀1・方解石1、許容コストはすべて A)
   var ITEMS = [['青銅の塊', '青銅の塊', 4, 'A', '#6e9bff'], ['琥珀の欠片', '琥珀の欠片', 4, 'A', '#ff9900'], ['下級の錬成粉', '下級の錬成粉', 3, 'A', '#980000'],
     ['黒銀の塊', '黒銀の塊', 1, 'A', '#9900ff'], ['方解石の欠片', '方解石の欠片', 1, 'A', '#6aa84f']];   // 5番目 = 素材名の色(元シート ☆本体☆ L17:L21。青銅 #0000ff・方解石 #274e13 は黒地用に明るく)
-  var COSTS = [['A', 'A(0.5秒まで)'], ['B', 'B(1.5秒まで)'], ['C', 'C(それ以上も可)']];
+  var COSTS = [['A', 'A (0.5秒まで)'], ['B', 'B (1.5秒まで)'], ['C', 'C (それ以上も可)']];
   var RT = [{"label": "ヴォーティガン(1) → ブルナーク台地(4)の往復", "a": 1, "b": 4, "pa": "ヴォーティガン", "pb": "ブルナーク台地", "note": ""}, {"label": "フィガル雪原(5) → フォルディス遺跡(2)の往復", "a": 5, "b": 2, "pa": "フィガル雪原", "pb": "フォルディス遺跡", "note": ""}, {"label": "フィガル雪原(5) → ビアズレイ(2)の往復", "a": 5, "b": 2, "pa": "フィガル雪原", "pb": "ビアズレイ", "note": ""}, {"label": "鎮めの森(5) → アバル(2)の往復(終盤の値)", "a": 5, "b": 2, "pa": "鎮めの森", "pb": "アバル", "note": "(終盤の値)"}, {"label": "ベイルド沼野(5) → リオネル島桟橋(3)の往復", "a": 5, "b": 3, "pa": "ベイルド沼野", "pb": "リオネル島桟橋", "note": ""}, {"label": "カノヌシ(2) → 聖主の御座(6)の往復", "a": 2, "b": 6, "pa": "カノヌシ", "pb": "聖主の御座", "note": ""}, {"label": "フィガル雪原(5) → ハドロウ沼窟(3)の往復", "a": 5, "b": 3, "pa": "フィガル雪原", "pb": "ハドロウ沼窟", "note": ""}, {"label": "ロウライネ(7) → ブルナーク台地(2)の往復", "a": 7, "b": 2, "pa": "ロウライネ", "pb": "ブルナーク台地", "note": ""}, {"label": "ガイブルク氷地(4) → メイルシオ(10)の往復", "a": 4, "b": 10, "pa": "ガイブルク氷地", "pb": "メイルシオ", "note": ""}, {"label": "モルガナの森(7) → プルナハ湖畔崖道(8)の往復", "a": 7, "b": 8, "pa": "モルガナの森", "pb": "プルナハ湖畔崖道", "note": ""}, {"label": "アルディナ草原(12) → ストーンベリィ(3)の往復", "a": 12, "b": 3, "pa": "アルディナ草原", "pb": "ストーンベリィ", "note": ""}, {"label": "ワァーグ樹林(5) → ノーグ湿原(13)の往復", "a": 5, "b": 13, "pa": "ワァーグ樹林", "pb": "ノーグ湿原", "note": ""}, {"label": "ダーナ街道(6) → 聖主の御座(14)の往復", "a": 6, "b": 14, "pa": "ダーナ街道", "pb": "聖主の御座", "note": ""}];   // 往復データ(make_web_page.py が 往復_乱数_20261014.tsv から埋め込む)
   var TP_EN = {
 "items": {
