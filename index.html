@@ -866,7 +866,7 @@ var TP_MEMO_LABEL = {
 };
 var TP_MEMO_ABBR = { '青銅の塊': ['青', 'cu'], '琥珀の欠片': ['琥', 'am'], '黒銀の塊': ['黒', 'ag'], '下級の錬成粉': ['錬', 'ok'], '方解石の欠片': ['方', 'ca'] };   // 方解石 = 2026-10-15
 var TP_MEMO_STYLE = '<style>\n' +
-  ':root{--bg:#08090b;--fg:#ffffff;--mut:#c4c8d0;--ln:#3a3f4a;--hd:#1c2029;--cu:#6cb4ff;--am:#ffad55;--ok:#980000;--ag:#d0aaff;--ca:#86e086;--warn:#ff5555;--kc:#b8e6b0}   /* 2026-10-17: 文字を明るく背景を黒く。錬成粉(ok)=☆本体☆ L19 と同じ #980000(2026-10-19)・方解石(ca)=緑 */\n' +
+  ':root{--bg:#08090b;--fg:#ffffff;--mut:#c4c8d0;--ln:#3a3f4a;--hd:#1c2029;--cu:#6cb4ff;--am:#ffad55;--ok:#980000;--ag:#d0aaff;--ca:#86e086;--warn:#ff5555}   /* 2026-10-17: 文字を明るく背景を黒く。錬成粉(ok)=☆本体☆ L19 と同じ #980000(2026-10-19)・方解石(ca)=緑 */\n' +
   '*{box-sizing:border-box}\n' +
   'body{margin:0;padding:6px;background:var(--bg);color:var(--fg);font:12px/1.3 "Meiryo","Yu Gothic UI",sans-serif;width:max-content}\n' +
   'h1{font-size:12px;margin:0 0 4px;color:var(--mut);font-weight:normal}\n' +
@@ -882,8 +882,8 @@ var TP_MEMO_STYLE = '<style>\n' +
   '.id{color:var(--mut);text-align:right}\n' +
   '.lk{font-size:11px}\n' +
   '.vk{font-size:11px;color:var(--mut);text-align:center}\n' +
-  'th.pk{font-weight:bold;color:var(--kc)}\n' +
-  'td.kh{color:var(--kc);text-align:center;font-size:11px;border:0}td.kh0{border:0}.tk{color:#ff9933}.pc{margin-top:5.5px}\n' +   /* 左の見出し(上 6px)の下 = 左の表の上端に、拾得計画の表の見出し行(ID…)の上端がくる値(2026-10-21 実測) */   /* +0〜+4 の上の見出し(2026-10-21) */
+  'th.pk{font-weight:bold;color:var(--fg)}\n' +
+  'td.kh{color:var(--fg);text-align:center;font-size:11px;border:0;white-space:nowrap!important;max-width:none!important}td.kh0{border:0}.tk{color:#ff9933}.pc{margin-top:5.5px}\n' +   /* 左の見出し(上 6px)の下 = 左の表の上端に、拾得計画の表の見出し行(ID…)の上端がくる値(2026-10-21 実測) */   /* +0〜+4 の上の見出し(2026-10-21) */
   '.nt{font-size:11px;margin-top:3px}.warn{color:var(--warn);font-weight:bold}\n' +
   '.row{display:flex;gap:10px;align-items:stretch}\n' +
   '.lc{display:flex;flex-direction:column;justify-content:space-between;width:min-content}\n' +
@@ -904,7 +904,7 @@ var TP_MEMO_BATTLE = '<h2>リザルトセリフによるExtra RNG Rollsの増分
   '<tr><td>先を急ぎましょう / 情けは掛けません</td><td class="n">1</td></tr>\n' +
   '<tr><td>問題ないよう / 行きましょう / すべて済みました</td><td class="n">2</td></tr>\n' +
   '</table>\n' +
-  '<div class="sp"><span class="tk">特2</span> = ノーダメ・11秒未満(ASL 15秒以下)・味方戦闘不能・60秒以上 → ベは全部 2</div>';
+  '<div class="sp"><span class="tk">特2</span> = ノーダメ・11秒未満(ASL 15秒以下)・味方戦闘不能・60秒以上 → <span class="tk">ベは全部 2</span></div>';
 
 function tpMemoEsc_(s) {   // Python の html.escape と同じ
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
@@ -917,12 +917,12 @@ var TP_MEMO_TXT = {
     kw: 'ゼクソン港 倉庫の琥珀の宝箱(エレノア①前)', k9: '⑨古びた槍(ヴェスター坑道 D09)', kt: '⑩トランクィッロ(カドニクス港、青銅3個未満なら回収)',
     kb: '⑪バッドソーンズ(レニードの街1回目、青銅2個未満なら回収)',
     warn: '上記の計画表に書かれていないトレジャーポイントは、光っていても拾わないでください。', free: '同じフロア内のトレジャーポイントであれば拾う順番は自由です。',
-    h1: '( 『傭兵1 / 傭兵2 / 拾得』 の増分合計 )', title: '本走メモ' },   // h1 = +0〜+4 の列の上の見出し(2026-10-21 ユーザー指定で GS の行から移した)
+    h1: '( 『傭兵1 / 傭兵2 / 拾得』 での増分合計 )', title: '本走メモ' },   // h1 = +0〜+4 の列の上の見出し(2026-10-21 ユーザー指定で GS の行から移した)
   en: { hdr: ['ID', 'Location', 'Visit', 'Where to look'], total: 'Total (Bronze / Amber / Silver / Powder / Calcite)', take: 'Take', skip: 'Skip',
     kw: 'Port Zekson warehouse Amber chest (before Eleanor 1)', k9: '⑨ Worn Spear (Vester Tunnels D09)', kt: '⑩ Tranquillo (Port Cadnix; take if Bronze &lt; 3)',
     kb: '⑪ Thorny Waistcoat (Reneed, 1st visit; take if Bronze &lt; 2)',
     warn: 'Do not pick up any treasure point not listed in the plan above, even if it glows.', free: 'Within the same floor, you may pick up the listed treasure points in any order.',
-    h1: '( Extra rolls of &ldquo;Mercenary 1 / Mercenary 2 / pickups&rdquo; )', title: 'Run Memo' }
+    h1: '( Extra rolls from &ldquo;Mercenary 1 / Mercenary 2 / pickups&rdquo; )', title: 'Run Memo' }
 };
 function tpMemoPlanTable_(res, en) {
   var T = TP_MEMO_TXT[en ? 'en' : 'ja'];
@@ -957,7 +957,7 @@ function tpMemoPlanTable_(res, en) {
     return K.map(function (k) { var on = res[k][key] === '回収'; return '<td class="' + (on ? cls : '') + '">' + (on ? T.take : T.skip) + '</td>'; }).join('');
   }
   return '<table>\n' +
-    '<tr class="kr"><td colspan="4" class="kh0"></td><td colspan="5" class="kh">' + T.h1 + '</td></tr>\n' +   // +0〜+4 の列が何かの見出し(2026-10-21 ユーザー指定。薄緑 = 列の見出しと同じ色)
+    '<tr class="kr"><td colspan="4" class="kh0"></td><td colspan="5" class="kh">' + T.h1 + '</td></tr>\n' +   // +0〜+4 の列が何かの見出し(2026-10-21 ユーザー指定。白)
     '<tr>' + T.hdr.map(function (h) { return '<th>' + h + '</th>'; }).join('') + K.map(function (k) { return '<th class="pk">+' + k + '</th>'; }).join('') + '</tr>\n' +
     rows.join('\n') + '\n' +
     '<tfoot><tr><td colspan="4">' + T.total + '</td>' + K.map(function (k) { return '<td>' + res[k].cnt + '</td>'; }).join('') + '</tr>\n' +
@@ -1909,7 +1909,7 @@ function tpSeedIsTop_(opts, c) {
       '<tr><td rowspan="3">Seres</td><td>' + q('BTLRES_051') + ' / ' + q('BTLRES_057') + '</td><td class="n">0</td></tr>\n' +
       '<tr><td>' + q('BTLRES_055') + ' / ' + q('BTLRES_056') + '</td><td class="n">1</td></tr>\n' +
       '<tr><td>' + q('BTLRES_052') + ' / ' + q('BTLRES_053') + ' / ' + q('BTLRES_054') + '</td><td class="n">2</td></tr>\n</table>\n' +
-      '<div class="sp"><span class="tk">S2</span> = no damage taken, under 11 s (ASL 15 s or less), an ally KO\'d, or 60 s or more &rarr; every Velvet line is 2.<br>' +
+      '<div class="sp"><span class="tk">S2</span> = no damage taken, under 11 s (ASL 15 s or less), an ally KO\'d, or 60 s or more &rarr; <span class="tk">every Velvet line is 2.</span><br>' +
       '&ldquo;We\'re finished here.&rdquo; alone is Seres (2); with &ldquo;Let\'s go.&rdquo; it is Velvet (1).</div>';
   }
   var $ = function (id) { return document.getElementById(id); };
