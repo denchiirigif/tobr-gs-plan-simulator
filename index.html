@@ -859,7 +859,7 @@ var TP_MEMO_LABEL = {
 };
 var TP_MEMO_ABBR = { '青銅の塊': ['青', 'cu'], '琥珀の欠片': ['琥', 'am'], '黒銀の塊': ['黒', 'ag'], '下級の錬成粉': ['錬', 'ok'], '方解石の欠片': ['方', 'ca'] };   // 方解石 = 2026-10-15
 var TP_MEMO_STYLE = '<style>\n' +
-  ':root{--bg:#08090b;--fg:#ffffff;--mut:#c4c8d0;--ln:#3a3f4a;--hd:#1c2029;--cu:#6cb4ff;--am:#ffad55;--ok:#980000;--ag:#d0aaff;--ca:#86e086;--warn:#ff5555}   /* 2026-10-17: 文字を明るく背景を黒く。錬成粉(ok)=☆本体☆ L19 と同じ #980000(2026-10-19)・方解石(ca)=緑 */\n' +
+  ':root{--bg:#08090b;--fg:#ffffff;--mut:#c4c8d0;--ln:#3a3f4a;--hd:#1c2029;--cu:#6cb4ff;--am:#ffad55;--ok:#980000;--ag:#d0aaff;--ca:#86e086;--warn:#ff5555;--kc:#b8e6b0}   /* 2026-10-17: 文字を明るく背景を黒く。錬成粉(ok)=☆本体☆ L19 と同じ #980000(2026-10-19)・方解石(ca)=緑 */\n' +
   '*{box-sizing:border-box}\n' +
   'body{margin:0;padding:6px;background:var(--bg);color:var(--fg);font:12px/1.3 "Meiryo","Yu Gothic UI",sans-serif;width:max-content}\n' +
   'h1{font-size:12px;margin:0 0 4px;color:var(--mut);font-weight:normal}\n' +
@@ -875,7 +875,8 @@ var TP_MEMO_STYLE = '<style>\n' +
   '.id{color:var(--mut);text-align:right}\n' +
   '.lk{font-size:11px}\n' +
   '.vk{font-size:11px;color:var(--mut);text-align:center}\n' +
-  'th.pk{font-weight:bold;color:var(--fg)}\n' +
+  'th.pk{font-weight:bold;color:var(--kc)}\n' +
+  'td.kh{color:var(--kc);text-align:center;font-size:11px;white-space:normal}td.kh0{border:0}.pc{margin-top:4.5px}\n' +   /* 左の見出し(上 6px)の下 = 左の表の上端に、拾得計画の表の見出し行(ID…)の上端がくる値(2026-10-21 実測) */   /* +0〜+4 の上の見出し(2026-10-21) */
   '.nt{font-size:11px;margin-top:3px}.warn{color:var(--warn);font-weight:bold}\n' +
   '.row{display:flex;gap:10px;align-items:stretch}\n' +
   '.lc{display:flex;flex-direction:column;justify-content:space-between;width:min-content}\n' +
@@ -909,12 +910,12 @@ var TP_MEMO_TXT = {
     kw: 'ゼクソン港 倉庫の琥珀の宝箱(エレノア①前)', k9: '⑨古びた槍(ヴェスター坑道 D09)', kt: '⑩トランクィッロ(カドニクス港、青銅3個未満なら回収)',
     kb: '⑪バッドソーンズ(レニードの街1回目、青銅2個未満なら回収)',
     warn: '上記の計画表に書かれていないトレジャーポイントは、光っていても拾わないでください。', free: '同じフロア内のトレジャーポイントであれば拾う順番は自由です。',
-    h1: '進行合計 = 傭兵1 ＋ 傭兵2 ＋ 調整拾得', title: '本走メモ' },
+    h1: '(傭兵1 ＋ 傭兵2 ＋ 拾得) の増分合計', title: '本走メモ' },   // h1 = +0〜+4 の列の上の見出し(2026-10-21 ユーザー指定で GS の行から移した)
   en: { hdr: ['ID', 'Location', 'Visit', 'Where to look'], total: 'Total (Bronze / Amber / Silver / Powder / Calcite)', take: 'Take', skip: 'Skip',
     kw: 'Port Zekson warehouse Amber chest (before Eleanor 1)', k9: '⑨ Worn Spear (Vester Tunnels D09)', kt: '⑩ Tranquillo (Port Cadnix; take if Bronze &lt; 3)',
     kb: '⑪ Thorny Waistcoat (Reneed, 1st visit; take if Bronze &lt; 2)',
     warn: 'Do not pick up any treasure point not listed in the plan above, even if it glows.', free: 'Within the same floor, you may pick up the listed treasure points in any order.',
-    h1: 'Extra rolls = Mercenary battle 1 + Mercenary battle 2 + extra pickups', title: 'Run Memo' }
+    h1: 'Extra rolls total (Mercenary 1 + Mercenary 2 + pickups)', title: 'Run Memo' }
 };
 function tpMemoPlanTable_(res, en) {
   var T = TP_MEMO_TXT[en ? 'en' : 'ja'];
@@ -949,6 +950,7 @@ function tpMemoPlanTable_(res, en) {
     return K.map(function (k) { var on = res[k][key] === '回収'; return '<td class="' + (on ? cls : '') + '">' + (on ? T.take : T.skip) + '</td>'; }).join('');
   }
   return '<table>\n' +
+    '<tr class="kr"><td colspan="4" class="kh0"></td><td colspan="5" class="kh">' + T.h1 + '</td></tr>\n' +   // +0〜+4 の列が何かの見出し(2026-10-21 ユーザー指定。薄緑 = 列の見出しと同じ色)
     '<tr>' + T.hdr.map(function (h) { return '<th>' + h + '</th>'; }).join('') + K.map(function (k) { return '<th class="pk">+' + k + '</th>'; }).join('') + '</tr>\n' +
     rows.join('\n') + '\n' +
     '<tfoot><tr><td colspan="4">' + T.total + '</td>' + K.map(function (k) { return '<td>' + res[k].cnt + '</td>'; }).join('') + '</tr>\n' +
@@ -975,11 +977,11 @@ function tpMemoHow_(text, gs, n0) {
 function tpMemoBody_(res, how, web) {
   var m = res.meta;
   var en = web && web.en;
-  var h1 = '<h1><b>GS ' + m.gs + '</b>' + (en ? ' (n0 ' + m.n0 + ')&nbsp;&nbsp; ' + TP_MEMO_TXT.en.h1 : '(n0 ' + m.n0 + ')　' + TP_MEMO_TXT.ja.h1) + '</h1>';
+  var h1 = '<h1><b>GS ' + m.gs + '</b>' + (en ? ' (n0 ' + m.n0 + ')' : '(n0 ' + m.n0 + ')') + '</h1>';
   if (web) {   // ウェブページ(2026-10-20 ユーザー指定): 左の欄 = 予測されるランダムスキル(web.skills)、右 = 拾得計画。増分表はメモに入れず、ページの入力欄に出す
     if (web.planOnly) return h1 + '\n\n' + tpMemoPlanTable_(res, en) + '\n';   // PNG「拾得計画テーブルのみ」(2026-10-21)
     return h1 + '\n\n<div class="row"><div class="lc"><div>\n' + (web.battle ? web.battle + '\n' : '') + (web.skills || '') + '\n</div>\n' + (how || '') +   // web.battle = PNG「拾得計画、ランダムスキル、セリフ表」のときだけ増分表を左上に(2026-10-21)
-      '\n</div><div>\n<h2>&nbsp;</h2>\n' + tpMemoPlanTable_(res, en) + '\n</div></div>\n';   // 空の見出し = 拾得計画の表の上端を左の表(見出しの下)の上端にそろえる(2026-10-21 ユーザー指定)
+      '\n</div><div class="pc">\n' + tpMemoPlanTable_(res, en) + '\n</div></div>\n';   // pc = 拾得計画の表の見出し行(ID…)の上端を左の表の上端にそろえる(2026-10-21 ユーザー指定)
   }
   return h1 + '\n\n<div class="row"><div class="lc"><div>\n' + TP_MEMO_BATTLE + '\n</div>\n' + (how || '') + '\n</div><div>\n' + tpMemoPlanTable_(res) + '\n</div></div>\n';
 }
