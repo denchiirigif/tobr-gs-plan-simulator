@@ -898,13 +898,13 @@ var TP_MEMO_STYLE = '<style>\n' +
 var TP_MEMO_BATTLE = '<h2>リザルトセリフによるExtra RNG Rollsの増分表 (2戦闘共通)</h2>\n' +
   '<table>\n' +
   '<tr><th>話者</th><th>セリフ</th><th>増分</th></tr>\n' +
-  '<tr><td rowspan="2">ベ</td><td>やれやれね</td><td class="n">0<span class="sp">(<span class="tk">特</span>2)</span></td></tr>\n' +
-  '<tr><td>片付いたわね / 邪魔するなら始末する</td><td class="n">1<span class="sp">(<span class="tk">特</span>2)</span></td></tr>\n' +
+  '<tr><td rowspan="2">ベ</td><td>やれやれね</td><td class="n">0<span class="sp">(<span class="tk">特2</span>)</span></td></tr>\n' +
+  '<tr><td>片付いたわね / 邪魔するなら始末する</td><td class="n">1<span class="sp">(<span class="tk">特2</span>)</span></td></tr>\n' +
   '<tr><td rowspan="3">シ</td><td>終わりましたね / さすがに甘くは</td><td class="n">0</td></tr>\n' +
   '<tr><td>先を急ぎましょう / 情けは掛けません</td><td class="n">1</td></tr>\n' +
   '<tr><td>問題ないよう / 行きましょう / すべて済みました</td><td class="n">2</td></tr>\n' +
   '</table>\n' +
-  '<div class="sp"><span class="tk">特</span> = ノーダメ・11秒未満(ASL 15秒以下)・味方戦闘不能・60秒以上 → ベは全部 2</div>';
+  '<div class="sp"><span class="tk">特2</span> = ノーダメ・11秒未満(ASL 15秒以下)・味方戦闘不能・60秒以上 → ベは全部 2</div>';
 
 function tpMemoEsc_(s) {   // Python の html.escape と同じ
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
@@ -917,12 +917,12 @@ var TP_MEMO_TXT = {
     kw: 'ゼクソン港 倉庫の琥珀の宝箱(エレノア①前)', k9: '⑨古びた槍(ヴェスター坑道 D09)', kt: '⑩トランクィッロ(カドニクス港、青銅3個未満なら回収)',
     kb: '⑪バッドソーンズ(レニードの街1回目、青銅2個未満なら回収)',
     warn: '上記の計画表に書かれていないトレジャーポイントは、光っていても拾わないでください。', free: '同じフロア内のトレジャーポイントであれば拾う順番は自由です。',
-    h1: '( 『傭兵1 ＋ 傭兵2 ＋ 拾得』の増分合計 )', title: '本走メモ' },   // h1 = +0〜+4 の列の上の見出し(2026-10-21 ユーザー指定で GS の行から移した)
+    h1: '( 『傭兵1 / 傭兵2 / 拾得』 の増分合計 )', title: '本走メモ' },   // h1 = +0〜+4 の列の上の見出し(2026-10-21 ユーザー指定で GS の行から移した)
   en: { hdr: ['ID', 'Location', 'Visit', 'Where to look'], total: 'Total (Bronze / Amber / Silver / Powder / Calcite)', take: 'Take', skip: 'Skip',
     kw: 'Port Zekson warehouse Amber chest (before Eleanor 1)', k9: '⑨ Worn Spear (Vester Tunnels D09)', kt: '⑩ Tranquillo (Port Cadnix; take if Bronze &lt; 3)',
     kb: '⑪ Thorny Waistcoat (Reneed, 1st visit; take if Bronze &lt; 2)',
     warn: 'Do not pick up any treasure point not listed in the plan above, even if it glows.', free: 'Within the same floor, you may pick up the listed treasure points in any order.',
-    h1: '( Extra rolls of &ldquo;Mercenary 1 + Mercenary 2 + pickups&rdquo; )', title: 'Run Memo' }
+    h1: '( Extra rolls of &ldquo;Mercenary 1 / Mercenary 2 / pickups&rdquo; )', title: 'Run Memo' }
 };
 function tpMemoPlanTable_(res, en) {
   var T = TP_MEMO_TXT[en ? 'en' : 'ja'];
@@ -1904,12 +1904,12 @@ function tpSeedIsTop_(opts, c) {
   function battleEn() {
     var q = function (k) { return escH(TP_EN.battle[k]); };
     return '<table>\n<tr><th>Speaker</th><th>Line</th><th>Rolls</th></tr>\n' +
-      '<tr><td rowspan="2">Velvet</td><td>' + q('BTLRES_001') + '</td><td class="n">0<span class="sp">(<span class="tk">S</span>2)</span></td></tr>\n' +
-      '<tr><td>' + q('BTLRES_002') + ' / ' + q('BTLRES_003') + '</td><td class="n">1<span class="sp">(<span class="tk">S</span>2)</span></td></tr>\n' +
+      '<tr><td rowspan="2">Velvet</td><td>' + q('BTLRES_001') + '</td><td class="n">0<span class="sp">(<span class="tk">S2</span>)</span></td></tr>\n' +
+      '<tr><td>' + q('BTLRES_002') + ' / ' + q('BTLRES_003') + '</td><td class="n">1<span class="sp">(<span class="tk">S2</span>)</span></td></tr>\n' +
       '<tr><td rowspan="3">Seres</td><td>' + q('BTLRES_051') + ' / ' + q('BTLRES_057') + '</td><td class="n">0</td></tr>\n' +
       '<tr><td>' + q('BTLRES_055') + ' / ' + q('BTLRES_056') + '</td><td class="n">1</td></tr>\n' +
       '<tr><td>' + q('BTLRES_052') + ' / ' + q('BTLRES_053') + ' / ' + q('BTLRES_054') + '</td><td class="n">2</td></tr>\n</table>\n' +
-      '<div class="sp"><span class="tk">S</span> = no damage taken, under 11 s (ASL 15 s or less), an ally KO\'d, or 60 s or more &rarr; every Velvet line is 2.<br>' +
+      '<div class="sp"><span class="tk">S2</span> = no damage taken, under 11 s (ASL 15 s or less), an ally KO\'d, or 60 s or more &rarr; every Velvet line is 2.<br>' +
       '&ldquo;We\'re finished here.&rdquo; alone is Seres (2); with &ldquo;Let\'s go.&rdquo; it is Velvet (1).</div>';
   }
   var $ = function (id) { return document.getElementById(id); };
