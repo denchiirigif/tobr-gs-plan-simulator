@@ -71,7 +71,8 @@ table.goals td.mat{font-weight:bold}
 table.goals input{width:4.5em}
 table.ops td.op select{max-width:100%}
 table.ops td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-table.ops td.cnt{white-space:nowrap;text-align:center}   /* 行う回数の列は中央ぞろえ(2026-10-21 ユーザー指定。n0 の行は右ぞろえのまま) */
+table.ops td.cnt{white-space:nowrap;text-align:right}table.ops td.cnt.fix{text-align:center}   /* 行う回数の列: プルダウンは右ぞろえ、1(固定) は中央(2026-10-21 ユーザー指定) */
+table.ops td.cnt select,#pg-plan table.goals select{text-align-last:center}#pg-plan table.goals input{text-align:center}   /* プルダウン・目標確保数の中の文字を中央に(2026-10-21 ユーザー指定) */
 table.ops td.fix{background:#3a3d42;font-weight:bold}
 table.ops td.res{background:#4f633b;font-weight:bold}   /* 使う n0 / GlobalSeed の行(見出しも)。灰色に近い、くすんだ黄緑(2026-10-20 ユーザー指定) */
 table.ops td.res b{font-size:15px}
