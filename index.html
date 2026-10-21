@@ -87,6 +87,7 @@ h2.pur{color:#c48cff}
 .bt-lead{font-size:11px;color:var(--mut);line-height:1.35;margin:-5px 0 3px}   /* 「特 = …」の補足と同じ薄字。上下を詰める */
 .battle .n{text-align:center;font-weight:bold;white-space:nowrap}
 .battle .sp{color:var(--mut);font-size:11px;font-weight:normal}
+.tk{color:#ff9933}   /* 増分表の「特」(英 S)= オレンジ(2026-10-21 ユーザー指定) */
 .battle>div.sp{margin-top:4px}
 label.chk{font-size:13px;display:flex;gap:6px;align-items:center;cursor:pointer;color:#e06666;font-weight:bold}
 label.chk input{width:16px;height:16px}
@@ -203,7 +204,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </div>
 </section>
 </main>
-<footer data-i18n="stamp">計算ロジック: コード.js 2026-10-21 生成(sha256 3018f2241688)・ページ作成 2026-10-21</footer>
+<footer data-i18n="stamp">計算ロジック: コード.js 2026-10-21 生成(sha256 cde992b00331)・ページ作成 2026-10-21</footer>
 <script type="text/plain" id="logic">/**
  * ベルセリア RTA トレジャーポイント拾得計画(NewGame〜ロウライネ)
  * 自動生成: TreasureAnalysis\基準記録\gen_appscript.py(手で直さないこと)  生成日 2026-10-21
@@ -487,15 +488,21 @@ function tpPlanCore_(n0, goals, header, b1, b2, adj) {
   // 1) ゼクソン港 倉庫の琥珀の宝箱: 開けない前提でトレジャーポイントの琥珀が2個以上なら開けない、届かなければ開ける(2026-10-13 ユーザー方針)
   // 2) ⑨古びた槍: その前提で黒銀が目標に届けば開けない、届かなければ開ける(2026-10-12 ユーザー方針)
   var KA = "琥珀の欠片", KS = "黒銀の塊", SOKO_AMBER = 2;
-  var openW = (choose(false, false).got[KA] || 0) < SOKO_AMBER;
-  var open9 = false, use = choose(false, openW);
-  if ((use.got[KS] || 0) < (cap[KS] || 0)) { open9 = true; use = choose(true, openW); }
-  // 3) ⑩トランクィッロ: その計画で青銅が3個に届かなければ開ける(開けても計画は変わらない。念のため開ける前提で計算し直す)
-  var KB = "青銅の塊", TRANQ_BRONZE = 3, openT = (use.got[KB] || 0) < TRANQ_BRONZE;
-  if (openT) use = choose(open9, openW, true);
-  // 4) ⑪バッドソーンズ(レニードの街): その計画で青銅が2個に届かなければ開ける(開ける前提で計算し直す)(2026-10-15 ユーザー方針)
-  var BT_BRONZE = 2, openB = (use.got[KB] || 0) < BT_BRONZE;
-  if (openB) use = choose(open9, openW, openT, true);
+  var KB = "青銅の塊", TRANQ_BRONZE = 3, BT_BRONZE = 2;
+  var openW = (choose(false, false).got[KA] || 0) < SOKO_AMBER, open9, openT, openB, use;
+  for (;;) {
+    open9 = false; use = choose(false, openW);
+    if ((use.got[KS] || 0) < (cap[KS] || 0)) { open9 = true; use = choose(true, openW); }
+    // 3) ⑩トランクィッロ: その計画で青銅が3個に届かなければ開ける(開けても計画は変わらない。念のため開ける前提で計算し直す)
+    openT = (use.got[KB] || 0) < TRANQ_BRONZE;
+    if (openT) use = choose(open9, openW, true);
+    // 4) ⑪バッドソーンズ(レニードの街): その計画で青銅が2個に届かなければ開ける(開ける前提で計算し直す)(2026-10-15 ユーザー方針)
+    openB = (use.got[KB] || 0) < BT_BRONZE;
+    if (openB) use = choose(open9, openW, openT, true);
+    // 5) 倉庫の見直し(2026-10-21 ユーザー決定 案A): ②〜④で立て直した計画の琥珀が2個に届かず倉庫を開けていなければ、開ける前提で②〜④をやり直す(1回だけ)
+    if (openW || (use.got[KA] || 0) >= SOKO_AMBER) break;
+    openW = true;
+  }
   use.picks.forEach(function (pk) {
     var p = pk.p, name = pk.name;
     // 1地点 = 2行。場所は上の行 = エリア名、下の行 = (フロア名)(2026-10-11、シートは場所欄を行ごとに結合し奇数行を太字)
@@ -876,7 +883,7 @@ var TP_MEMO_STYLE = '<style>\n' +
   '.lk{font-size:11px}\n' +
   '.vk{font-size:11px;color:var(--mut);text-align:center}\n' +
   'th.pk{font-weight:bold;color:var(--kc)}\n' +
-  'td.kh{color:var(--kc);text-align:center;font-size:11px;white-space:normal}td.kh0{border:0}.pc{margin-top:4.5px}\n' +   /* 左の見出し(上 6px)の下 = 左の表の上端に、拾得計画の表の見出し行(ID…)の上端がくる値(2026-10-21 実測) */   /* +0〜+4 の上の見出し(2026-10-21) */
+  'td.kh{color:var(--kc);text-align:center;font-size:11px;border:0}td.kh0{border:0}.tk{color:#ff9933}.pc{margin-top:5.5px}\n' +   /* 左の見出し(上 6px)の下 = 左の表の上端に、拾得計画の表の見出し行(ID…)の上端がくる値(2026-10-21 実測) */   /* +0〜+4 の上の見出し(2026-10-21) */
   '.nt{font-size:11px;margin-top:3px}.warn{color:var(--warn);font-weight:bold}\n' +
   '.row{display:flex;gap:10px;align-items:stretch}\n' +
   '.lc{display:flex;flex-direction:column;justify-content:space-between;width:min-content}\n' +
@@ -891,13 +898,13 @@ var TP_MEMO_STYLE = '<style>\n' +
 var TP_MEMO_BATTLE = '<h2>リザルトセリフによるExtra RNG Rollsの増分表 (2戦闘共通)</h2>\n' +
   '<table>\n' +
   '<tr><th>話者</th><th>セリフ</th><th>増分</th></tr>\n' +
-  '<tr><td rowspan="2">ベ</td><td>やれやれね</td><td class="n">0<span class="sp">(特2)</span></td></tr>\n' +
-  '<tr><td>片付いたわね / 邪魔するなら始末する</td><td class="n">1<span class="sp">(特2)</span></td></tr>\n' +
+  '<tr><td rowspan="2">ベ</td><td>やれやれね</td><td class="n">0<span class="sp">(<span class="tk">特</span>2)</span></td></tr>\n' +
+  '<tr><td>片付いたわね / 邪魔するなら始末する</td><td class="n">1<span class="sp">(<span class="tk">特</span>2)</span></td></tr>\n' +
   '<tr><td rowspan="3">シ</td><td>終わりましたね / さすがに甘くは</td><td class="n">0</td></tr>\n' +
   '<tr><td>先を急ぎましょう / 情けは掛けません</td><td class="n">1</td></tr>\n' +
   '<tr><td>問題ないよう / 行きましょう / すべて済みました</td><td class="n">2</td></tr>\n' +
   '</table>\n' +
-  '<div class="sp">特 = ノーダメ・11秒未満(ASL 15秒以下)・味方戦闘不能・60秒以上 → ベは全部 2</div>';
+  '<div class="sp"><span class="tk">特</span> = ノーダメ・11秒未満(ASL 15秒以下)・味方戦闘不能・60秒以上 → ベは全部 2</div>';
 
 function tpMemoEsc_(s) {   // Python の html.escape と同じ
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
@@ -910,12 +917,12 @@ var TP_MEMO_TXT = {
     kw: 'ゼクソン港 倉庫の琥珀の宝箱(エレノア①前)', k9: '⑨古びた槍(ヴェスター坑道 D09)', kt: '⑩トランクィッロ(カドニクス港、青銅3個未満なら回収)',
     kb: '⑪バッドソーンズ(レニードの街1回目、青銅2個未満なら回収)',
     warn: '上記の計画表に書かれていないトレジャーポイントは、光っていても拾わないでください。', free: '同じフロア内のトレジャーポイントであれば拾う順番は自由です。',
-    h1: '(傭兵1 ＋ 傭兵2 ＋ 拾得) の増分合計', title: '本走メモ' },   // h1 = +0〜+4 の列の上の見出し(2026-10-21 ユーザー指定で GS の行から移した)
+    h1: '( 『傭兵1 ＋ 傭兵2 ＋ 拾得』の増分合計 )', title: '本走メモ' },   // h1 = +0〜+4 の列の上の見出し(2026-10-21 ユーザー指定で GS の行から移した)
   en: { hdr: ['ID', 'Location', 'Visit', 'Where to look'], total: 'Total (Bronze / Amber / Silver / Powder / Calcite)', take: 'Take', skip: 'Skip',
     kw: 'Port Zekson warehouse Amber chest (before Eleanor 1)', k9: '⑨ Worn Spear (Vester Tunnels D09)', kt: '⑩ Tranquillo (Port Cadnix; take if Bronze &lt; 3)',
     kb: '⑪ Thorny Waistcoat (Reneed, 1st visit; take if Bronze &lt; 2)',
     warn: 'Do not pick up any treasure point not listed in the plan above, even if it glows.', free: 'Within the same floor, you may pick up the listed treasure points in any order.',
-    h1: 'Extra rolls total (Mercenary 1 + Mercenary 2 + pickups)', title: 'Run Memo' }
+    h1: '( Extra rolls of &ldquo;Mercenary 1 + Mercenary 2 + pickups&rdquo; )', title: 'Run Memo' }
 };
 function tpMemoPlanTable_(res, en) {
   var T = TP_MEMO_TXT[en ? 'en' : 'ja'];
@@ -1883,7 +1890,7 @@ function tpSeedIsTop_(opts, c) {
     b_run: '&darr;Build plan&darr;', b_png_plan: 'Save PNG (pickup plan table only)', b_png_all: 'Save PNG (pickup plan / random skills / result lines tables, all)', b_reset: '&uarr;Reset to defaults&uarr;',
     skopt: 'Also show the random skills of gear you dismantle / cut when materials are plentiful.',
     n1: '+0 to +4 columns: Extra RNG Rolls (= how many more RNG calls than planned happened between NewGame and Burnack Plateau.)<br>= the sum of<ul><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; (+0~2)</li><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo; (+0~2)</li><li>Pickups (adjusting by picking up treasure points, Fire Ring, etc.) (+1)</li></ul>',
-    stamp: 'Plan logic: コード.js generated 2026-10-21 (sha256 3018f2241688) / page built 2026-10-21',
+    stamp: 'Plan logic: コード.js generated 2026-10-21 (sha256 cde992b00331) / page built 2026-10-21',
     tab_plan: 'TP pickup plan', tab_seed: 'Seed finder',
     sd_h_cost: '• Cost settings', sd_c_ng: 'NewGame re-press (each)', sd_c_half: 'Map move (per half round trip)', sd_c_load: 'Load &amp; return to title', sd_c_pick: 'Item pickup',
     sd_h_skill: '• Wanted random skills', sd_back: 'Back to skill conditions', sd_opt: 'Also specify skills for gear you dismantle / cut when materials are plentiful.',
@@ -1897,12 +1904,12 @@ function tpSeedIsTop_(opts, c) {
   function battleEn() {
     var q = function (k) { return escH(TP_EN.battle[k]); };
     return '<table>\n<tr><th>Speaker</th><th>Line</th><th>Rolls</th></tr>\n' +
-      '<tr><td rowspan="2">Velvet</td><td>' + q('BTLRES_001') + '</td><td class="n">0<span class="sp">(S2)</span></td></tr>\n' +
-      '<tr><td>' + q('BTLRES_002') + ' / ' + q('BTLRES_003') + '</td><td class="n">1<span class="sp">(S2)</span></td></tr>\n' +
+      '<tr><td rowspan="2">Velvet</td><td>' + q('BTLRES_001') + '</td><td class="n">0<span class="sp">(<span class="tk">S</span>2)</span></td></tr>\n' +
+      '<tr><td>' + q('BTLRES_002') + ' / ' + q('BTLRES_003') + '</td><td class="n">1<span class="sp">(<span class="tk">S</span>2)</span></td></tr>\n' +
       '<tr><td rowspan="3">Seres</td><td>' + q('BTLRES_051') + ' / ' + q('BTLRES_057') + '</td><td class="n">0</td></tr>\n' +
       '<tr><td>' + q('BTLRES_055') + ' / ' + q('BTLRES_056') + '</td><td class="n">1</td></tr>\n' +
       '<tr><td>' + q('BTLRES_052') + ' / ' + q('BTLRES_053') + ' / ' + q('BTLRES_054') + '</td><td class="n">2</td></tr>\n</table>\n' +
-      '<div class="sp">S = no damage taken, under 11 s (ASL 15 s or less), an ally KO\'d, or 60 s or more &rarr; every Velvet line is 2.<br>' +
+      '<div class="sp"><span class="tk">S</span> = no damage taken, under 11 s (ASL 15 s or less), an ally KO\'d, or 60 s or more &rarr; every Velvet line is 2.<br>' +
       '&ldquo;We\'re finished here.&rdquo; alone is Seres (2); with &ldquo;Let\'s go.&rdquo; it is Velvet (1).</div>';
   }
   var $ = function (id) { return document.getElementById(id); };
