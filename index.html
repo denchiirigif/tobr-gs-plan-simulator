@@ -92,12 +92,13 @@ h2.pur{color:#c48cff}
 .battle>div.sp{margin-top:4px}
 label.chk{font-size:13px;display:flex;gap:6px;align-items:center;cursor:pointer;color:#e06666;font-weight:bold}
 label.chk input{width:16px;height:16px}
-label.memo-chk{font-size:12px;padding:6px 6px 0}   /* 本走メモの枠の左上(元の GS の行の位置・大きさ。2026-10-21 ユーザー指定で入れ替え) */
+label.memo-chk{font-size:12px}   /* 本走メモの枠の左上(元の GS の行の位置・大きさ。2026-10-21 ユーザー指定で入れ替え) */
 label.memo-chk input{width:13px;height:13px;margin:0}
 .gsline{font-size:26px;color:#c4c8d0;position:relative;left:8px;top:4px}.gsline b{color:#fff}   /* GS の行(色は本走メモの h1 と同じ。2026-10-21 ユーザー指定で 13px の2倍・少し右下へ) */
 .actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
-.memobar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin-bottom:4px;max-width:100%}   /* チェックボックスの右に ③④ PNG 保存。④ の右端を拾得計画の表の右端にそろえる(幅は fitMemo が決める。2026-10-21 ユーザー指定) */
-.memobar .pngs{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+.memobar{margin-bottom:4px}   /* GS の行 */
+.memotop{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:6px 0 0 6px}   /* 本走メモの枠の上: チェックボックスの右に ③④ PNG 保存(2026-10-22 ユーザー指定で表の少し上へ)。④ の右端を拾得計画の表の右端にそろえる(幅は fitMemo が決める) */
+.memotop .pngs{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
 #pngbox{position:fixed;left:-20000px;top:0;border:0;width:4000px;height:3000px}   /* PNG 用の本走メモを描く見えない iframe */
 button{cursor:pointer;padding:5px 12px}
 button.primary{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:bold}
@@ -120,7 +121,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <p class="lead" data-i18n="lead">NewGame までの操作(または n0)と目標確保数を入れて「↓計画を出力↓」を押すと、本走メモ(拾得計画の表)ができます。計算はすべてこのブラウザの中で行います。</p>
 </header>
 <nav class="tabs">
-<button class="tab on" id="tab_plan" data-i18n="tab_plan">TP拾得計画の作成</button>
+<button class="tab on" id="tab_plan" data-i18n="tab_plan">TP拾得表計画の作成</button>
 <button class="tab" id="tab_seed" data-i18n="tab_seed">シード探し</button>
 </nav>
 <main id="pg-plan">
@@ -139,7 +140,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <tr><td class="op" data-i18n="op_tb">別データ内で 宝箱を開ける<br>トレジャーポイントを調べる</td><td class="cnt"><select id="tb" class="in-o"></select></td><td class="num" id="c_tb"></td></tr>
 <tr><td class="op pur" data-i18n="op_rs">リザルトセリフ抽選を受ける(利用非推奨 ※3)</td><td class="cnt"><select id="rs" class="in-g"></select></td><td class="num" id="c_rs"></td></tr>
 <tr><td class="op" data-i18n="op_ng"><span class="red">NewGame 選択の瞬間(※2)</span>(8662)</td><td class="cnt"><select id="ng" class="in-o"></select></td><td class="num" id="c_ng"></td></tr>
-<tr><td class="op" data-i18n="op_auto">n0(= 上記の合計 − 最後の NewGame の 8662)</td><td colspan="2" class="num fix" id="n0auto"></td></tr>
+<tr><td class="op" data-i18n="op_auto">n0(= 上記の合計 − 最後の NewGame の 8662)</td><td colspan="2" class="num fix" id="n0auto" style="text-align:center"></td></tr>
 <tr><td class="op" data-i18n="op_n0">n0 を直接入力<span class="blue">(入れるとこちらを優先して使用)</span></td><td colspan="2" class="num"><input id="n0" class="in-o" type="number" min="0" step="1" placeholder="空欄"></td></tr>
 <tr><td class="op res" data-i18n="op_use"><b>使う n0 / GlobalSeed</b></td><td colspan="2" class="num res"><b id="n0use">-</b> / <b id="gsv">-</b></td></tr>
 </tbody>
@@ -170,12 +171,12 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <hr class="sep">
 <div class="memobar" id="memobar">
 <span class="gsline" id="gsline"></span>
+</div>
+<div class="memo-wrap"><div class="memotop" id="memotop"><label class="chk memo-chk"><input type="checkbox" id="skopt"> <span data-i18n="skopt">分解する装備 / 素材潤沢ならカットする装備 のランダムスキルも表示する。</span></label>
 <span class="pngs">
 <button id="png_plan" class="primary" disabled data-i18n="b_png_plan">pngで保存 (拾得計画表のみ)</button>
 <button id="png_all" disabled data-i18n="b_png_all">pngで保存 (拾得計画表 / ランダムスキル表 / リザルトセリフ表 全て)</button>
-</span>
-</div>
-<div class="memo-wrap"><label class="chk memo-chk"><input type="checkbox" id="skopt"> <span data-i18n="skopt">分解する装備 / 素材潤沢ならカットする装備 のランダムスキルも表示する。</span></label><iframe id="memo" title="本走メモ" scrolling="no"></iframe></div>
+</span></div><iframe id="memo" title="本走メモ" scrolling="no"></iframe></div>
 <iframe id="pngbox" title="PNG" scrolling="no" aria-hidden="true" tabindex="-1"></iframe>
 <section class="notes">
 <ul>
@@ -188,7 +189,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <div class="cols">
 <div class="col">
 <h2><span data-i18n="sd_h_skill" id="sd_h_cond">・ランダムスキル指定</span><span id="sd_h_view" hidden></span></h2>
-<label class="chk" id="sd_back_l" hidden><input type="checkbox" id="sd_back"> <span data-i18n="sd_back">スキル指定に戻る</span></label>
+<label class="chk" id="sd_back_l" hidden><input type="checkbox" id="sd_back"> <span data-i18n="sd_back">スキル指定画面に戻る</span></label>
 <label class="chk"><input type="checkbox" id="sd_opt"> <span data-i18n="sd_opt" id="sd_opt_t">分解する装備 / 素材潤沢ならカットする装備 のスキルも指定する。</span></label>
 <table class="goals sd-skill">
 <thead><tr><th data-i18n="sd_th_no">番号</th><th data-i18n="sd_th_item">拾得するアイテム</th><th data-i18n="sd_th_fixed">ランダムスキル(固定)</th><th id="sd_th_want">ランダムスキル(指定)</th></tr></thead>
@@ -208,7 +209,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </div>
 </section>
 </main>
-<footer data-i18n="stamp">計算ロジック: コード.js 2026-10-21 生成(sha256 cde992b00331)・ページ作成 2026-10-21</footer>
+<footer data-i18n="stamp">計算ロジック: コード.js 2026-10-21 生成(sha256 cde992b00331)・ページ作成 2026-10-22</footer>
 <script type="text/plain" id="logic">/**
  * ベルセリア RTA トレジャーポイント拾得計画(NewGame〜ロウライネ)
  * 自動生成: TreasureAnalysis\基準記録\gen_appscript.py(手で直さないこと)  生成日 2026-10-21
@@ -1893,10 +1894,10 @@ function tpSeedIsTop_(opts, c) {
     b_run: '&darr;Build plan&darr;', b_png_plan: 'Save PNG (pickup plan table only)', b_png_all: 'Save PNG (pickup plan / random skills / result lines tables, all)', b_reset: '&uarr;Reset to defaults&uarr;',
     skopt: 'Also show the random skills of gear you dismantle / cut when materials are plentiful.',
     n1: '+0 to +4 columns: Extra RNG Rolls (= how many more RNG calls than planned happened between NewGame and Burnack Plateau.)<br>= the sum of<ul><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; (+0~2)</li><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo; (+0~2)</li><li>Pickups (adjusting by picking up treasure points, Fire Ring, etc.) (+1)</li></ul>',
-    stamp: 'Plan logic: コード.js generated 2026-10-21 (sha256 cde992b00331) / page built 2026-10-21',
+    stamp: 'Plan logic: コード.js generated 2026-10-21 (sha256 cde992b00331) / page built 2026-10-22',
     tab_plan: 'TP pickup plan', tab_seed: 'Seed finder',
     sd_h_cost: '• Cost settings', sd_c_ng: 'NewGame re-press (each)', sd_c_half: 'Map move (per half round trip)', sd_c_load: 'Load &amp; return to title', sd_c_pick: 'Item pickup',
-    sd_h_skill: '• Wanted random skills', sd_back: 'Back to skill conditions', sd_opt: 'Also specify skills for gear you dismantle / cut when materials are plentiful.',
+    sd_h_skill: '• Wanted random skills', sd_back: 'Back to the skill condition screen', sd_opt: 'Also specify skills for gear you dismantle / cut when materials are plentiful.',
     sd_th_no: 'No.', sd_th_item: 'Item', sd_th_fixed: 'Fixed skill', sd_th_want: 'Wanted random skills',
     sd_h_res: '• Seeds that match (lowest cost first)', sd_limit: 'Max results', sd_run: 'Search'
   };
@@ -2136,7 +2137,7 @@ function tpSeedIsTop_(opts, c) {
     var z = Math.min(1, Math.max(avail / w, 0.5));   // 上部のパネルの幅に収まるよう縮めるだけ(拡大はしない。①②③との大きさの比を画面の幅によらず一定に。2026-10-20 ユーザー指定)
     f.style.zoom = z;
     // ③④ の行: ④ の右端を拾得計画の表の右端にそろえる(2026-10-21 ユーザー指定。表の座標は iframe の中の値なので zoom を掛ける)
-    var t = d.querySelector('.row > div:last-child table') || d.querySelector('table'), bar = $('memobar');
+    var t = d.querySelector('.row > div:last-child table') || d.querySelector('table'), bar = $('memotop');
     if (t && f.getBoundingClientRect().width > 0) bar.style.width = Math.round(f.getBoundingClientRect().left + t.getBoundingClientRect().right * z - bar.getBoundingClientRect().left) + 'px';
   }
   window.addEventListener('resize', fitMemo);
