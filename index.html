@@ -192,12 +192,12 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <button id="png_plan" class="primary" disabled data-i18n="b_png_plan">pngで保存 (拾得計画表のみ)</button>
 <button id="png_all" disabled data-i18n="b_png_all">pngで保存 (拾得計画表 / ランダムスキル表 / リザルトセリフ表 全て)</button>
 </span></div>
-<dialog id="bgdlg"><h3 data-i18n="bg_title">列の背景色</h3><div id="bg_main"><div class="r"><span data-i18n="bg_area">ダンジョン</span><select id="bg_area"></select><button id="bg_sw" title="色を選ぶ"></button></div><div id="bg_pk" hidden><div id="pk_sv"><i class="kn" id="pk_svk"></i></div><div id="pk_h"><i class="kn" id="pk_hk"></i></div><div class="r"><input id="pk_hex" maxlength="7" spellcheck="false"><span id="pk_pv"></span><button id="bg_ok" class="primary" data-i18n="bg_ok">決定</button></div></div><div class="r"><button id="bg_clear" data-i18n="bg_clear">このダンジョンを初期の色に戻す</button><button id="bg_clearall" data-i18n="bg_clearall">すべて初期の色に戻す</button></div></div><div id="bg_ask" hidden><div class="r" data-i18n="bg_ask">すべてのダンジョンを初期の色に戻しますか？</div><div class="r"><button id="bg_yes" class="primary" data-i18n="bg_yes">戻す</button><button id="bg_no" data-i18n="bg_no">やめる</button></div></div><div class="r end"><button id="bg_close" data-i18n="bg_close">閉じる</button></div></dialog>
+<dialog id="bgdlg"><h3 data-i18n="bg_title">列の背景色</h3><div id="bg_main"><div class="r"><span data-i18n="bg_area">ダンジョン</span><select id="bg_area"></select><button id="bg_sw" title="色を選ぶ"></button><button id="bg_close" data-i18n="bg_close">閉じる</button></div><div id="bg_pk" hidden><div id="pk_sv"><i class="kn" id="pk_svk"></i></div><div id="pk_h"><i class="kn" id="pk_hk"></i></div><div class="r"><input id="pk_hex" maxlength="7" spellcheck="false"><span id="pk_pv"></span><button id="bg_ok" class="primary" data-i18n="bg_ok">決定</button></div></div><div class="r"><button id="bg_clear" data-i18n="bg_clear">このダンジョンを初期の色に戻す</button><button id="bg_clearall" data-i18n="bg_clearall">すべて初期の色に戻す</button></div></div><div id="bg_ask" hidden><div class="r" data-i18n="bg_ask">すべてのダンジョンを初期の色に戻しますか？</div><div class="r"><button id="bg_yes" class="primary" data-i18n="bg_yes">戻す</button><button id="bg_no" data-i18n="bg_no">やめる</button></div></div></dialog>
 <iframe id="memo" title="本走メモ" scrolling="no"></iframe></div>
 <iframe id="pngbox" title="PNG" scrolling="no" aria-hidden="true" tabindex="-1"></iframe>
 <section class="notes">
 <ul>
-<li data-i18n="n1">+0〜+4 の列 ：Extra RNG Rolls (= NewGame〜ブルナーク台地の前で予定より乱数が進んだ回数。)<br>= 以下の合計<ul><li>『対魔士1傭兵1のリザルトセリフ分』 (+0~2)</li><li>『対魔士1傭兵2のリザルトセリフ分』 (+0~2)</li><li>『拾得(トレジャーポイント拾得での調整、ファイアリングなど)』 (+1)</li></ul></li>
+<li data-i18n="n1">+0〜+5 の列 ：Extra RNG Rolls (= NewGame〜ブルナーク台地の前で予定より乱数が進んだ回数。)<br>= 以下の合計<ul><li>『対魔士1傭兵1のリザルトセリフ分』 (+0~2)</li><li>『対魔士1傭兵2のリザルトセリフ分』 (+0~2)</li><li>『拾得(トレジャーポイント拾得での調整、ファイアリングなど)』 (+1)</li></ul></li>
 </ul>
 </section>
 </main>
@@ -839,11 +839,12 @@ function TP_CHEST_BADTHORNS(n0, goals, b1, b2, adj) {
 //   goals = [[素材名, 目標確保数, 許容コストの先頭文字], ...]
 //   all = true なら +k ごとに 傭兵1/傭兵2/調整拾得 の全配分を計算して「配分によらず同じ」か確かめる(false なら最初の配分だけ。結果の列は同じ)
 //   onCol(k, col) = 列が1つできるたびに呼ぶ(省略可。ページの進み具合の表示用)
+//   maxK = 最後の列(省略時 4 = +0〜+4。ウェブページは 5 = +0〜+5、2026-10-26 ユーザー指定。本走メモ html は従来どおり 4)
 var TP_MEMO_ITEMS = ['青銅の塊', '琥珀の欠片', '黒銀の塊', '下級の錬成粉', '方解石の欠片'];
-function tpMemoPlan_(N0, goals, all, onCol) {
+function tpMemoPlan_(N0, goals, all, onCol, maxK) {
   var g7 = goals.map(function (g) { return [g[0], '', '', g[1], '個', g[2], '']; });
   var res = {};
-  for (var k = 0; k <= 4; k++) {
+  for (var k = 0; k <= (maxK || 4); k++) {
     var vs = [];
     for (var b1 = 0; b1 <= Math.min(2, k); b1++) {
       var rest = k - b1, b2 = Math.min(2, rest), adj = rest - b2;
@@ -960,7 +961,7 @@ var TP_MEMO_TXT = {
 function tpMemoPlanTable_(res, en, bg) {
   var T = TP_MEMO_TXT[en ? 'en' : 'ja'];
   var tr = function (dict, v) { return en && dict && v in dict ? dict[v] : v; };   // 訳が無ければ日本語のまま
-  var K = ['0', '1', '2', '3', '4'], cell = {}, firstOp = {}, info = {}, seenOrder = [];
+  var K = Object.keys(res).filter(function (k) { return /^\d+$/.test(k); }).sort(function (a, b) { return a - b; }), cell = {}, firstOp = {}, info = {}, seenOrder = [];
   // 行は「地点 × 訪問区分」ごと(2026-10-26 ユーザー指定: 列によって訪問区分が違う地点は <崖ツアー②/崖ツアー①> とまとめず別の行に)
   K.forEach(function (k) {
     cell[k] = {};
@@ -1928,7 +1929,7 @@ function tpSeedIsTop_(opts, c) {
     bt_lead: 'In the two battles below in Titania, the result-line roll adds an uncertain number of RNG calls.<br>&ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; / &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo;',
     b_run: '&darr;Build plan&darr;', b_png_plan: 'Save PNG (pickup plan table only)', b_bg: 'Row colors', bg_title: 'Row colors', bg_area: 'Dungeon', bg_ok: 'Apply', bg_clear: 'Reset this dungeon', bg_clearall: 'Reset all', bg_ask: 'Reset every dungeon to its default color?', bg_yes: 'Reset', bg_no: 'Cancel', bg_close: 'Close', b_png_all: 'Save PNG (pickup plan / random skills / result lines tables, all)', b_reset: '&uarr;Reset to defaults&uarr;',
     skopt: 'Also show the random skills of gear you dismantle / cut when materials are plentiful.',
-    n1: '+0 to +4 columns: Extra RNG Rolls (= how many more RNG calls than planned happened between NewGame and Burnack Plateau.)<br>= the sum of<ul><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; (+0~2)</li><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo; (+0~2)</li><li>Pickups (adjusting by picking up treasure points, Fire Ring, etc.) (+1)</li></ul>',
+    n1: '+0 to +5 columns: Extra RNG Rolls (= how many more RNG calls than planned happened between NewGame and Burnack Plateau.)<br>= the sum of<ul><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; (+0~2)</li><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo; (+0~2)</li><li>Pickups (adjusting by picking up treasure points, Fire Ring, etc.) (+1)</li></ul>',
     stamp: 'Plan logic: コード.js generated 2026-10-21 (sha256 cde992b00331) / page built 2026-10-26',
     tab_plan: 'TP pickup plan', tab_seed: 'Seed finder',
     sd_h_cost: '• Cost settings', sd_c_ng: 'NewGame re-press (each)', sd_c_half: 'Map move (per half round trip)', sd_c_load: 'Load &amp; return to title', sd_c_pick: 'Item pickup',
@@ -2153,9 +2154,10 @@ function tpSeedIsTop_(opts, c) {
   $('n0').addEventListener('input', showGs);
   document.querySelectorAll('table.ops select').forEach(function (e) { e.addEventListener('change', showGs); });
 
+  var TP_COLS = 5;   // 本走メモの列 = +0〜+5(2026-10-26 ユーザー指定で +5 を追加。本走メモ html は +0〜+4 のまま)
   var worker = null;
   try {
-    var wsrc = LOGIC + '\n;onmessage=function(e){try{var r=tpMemoPlan_(e.data.n0,e.data.goals,false,function(k){postMessage({col:k});});postMessage({res:r});}catch(err){postMessage({err:String(err&&err.stack||err)});}};';
+    var wsrc = LOGIC + '\n;onmessage=function(e){try{var r=tpMemoPlan_(e.data.n0,e.data.goals,false,function(k){postMessage({col:k});},e.data.maxK);postMessage({res:r});}catch(err){postMessage({err:String(err&&err.stack||err)});}};';
     worker = new Worker(URL.createObjectURL(new Blob([wsrc], { type: 'text/javascript' })));
   } catch (e) { worker = null; }
 
@@ -2316,10 +2318,10 @@ function tpSeedIsTop_(opts, c) {
         else { done(); status(T('計算に失敗しました: ', 'Calculation failed: ') + e.data.err, true); }
       };
       worker.onerror = function (e) { done(); status(T('計算に失敗しました: ', 'Calculation failed: ') + e.message, true); };
-      worker.postMessage({ n0: v, goals: g });
+      worker.postMessage({ n0: v, goals: g, maxK: TP_COLS });
     } else {
       setTimeout(function () {
-        try { show(L.tpMemoPlan_(v, g, false)); } catch (err) { status(T('計算に失敗しました: ', 'Calculation failed: ') + err, true); }
+        try { show(L.tpMemoPlan_(v, g, false, null, TP_COLS)); } catch (err) { status(T('計算に失敗しました: ', 'Calculation failed: ') + err, true); }
         done();
       }, 30);
     }
