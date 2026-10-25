@@ -209,7 +209,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </div>
 </section>
 </main>
-<footer data-i18n="stamp">計算ロジック: コード.js 2026-10-21 生成(sha256 cde992b00331)・ページ作成 2026-10-22</footer>
+<footer data-i18n="stamp">計算ロジック: コード.js 2026-10-21 生成(sha256 cde992b00331)・ページ作成 2026-10-26</footer>
 <script type="text/plain" id="logic">/**
  * ベルセリア RTA トレジャーポイント拾得計画(NewGame〜ロウライネ)
  * 自動生成: TreasureAnalysis\基準記録\gen_appscript.py(手で直さないこと)  生成日 2026-10-21
@@ -845,6 +845,10 @@ function tpMemoPlan_(N0, goals, all, onCol) {
     if (onCol) onCol(k, res[k]);
   }
   res.meta = { n0: N0, gs: tpVal_(tpJump_(N0 + 2), 65536), goals: goals.map(function (g) { return [g[0], g[1], String(g[2]).charAt(0)]; }) };
+  // 宝箱を開ける位置(TP_DATA.ops の番号。本走メモで宝箱の行をルート順に差し込む。2026-10-26)
+  var cop = {}, CK = { 5: 'k9', 6: 'kw', 7: 'kt', 8: 'kb' };
+  TP_DATA.ops.forEach(function (o, i) { if (CK[o[0]]) cop[CK[o[0]]] = i; });
+  res.meta.chestOp = cop;
   return res;
 }
 
@@ -871,7 +875,7 @@ var TP_MEMO_LABEL = {
 };
 var TP_MEMO_ABBR = { '青銅の塊': ['青', 'cu'], '琥珀の欠片': ['琥', 'am'], '黒銀の塊': ['黒', 'ag'], '下級の錬成粉': ['錬', 'ok'], '方解石の欠片': ['方', 'ca'] };   // 方解石 = 2026-10-15
 var TP_MEMO_STYLE = '<style>\n' +
-  ':root{--bg:#08090b;--fg:#ffffff;--mut:#c4c8d0;--ln:#3a3f4a;--hd:#1c2029;--cu:#6cb4ff;--am:#ffad55;--ok:#980000;--ag:#d0aaff;--ca:#86e086;--warn:#ff5555}   /* 2026-10-17: 文字を明るく背景を黒く。錬成粉(ok)=☆本体☆ L19 と同じ #980000(2026-10-19)・方解石(ca)=緑 */\n' +
+  ':root{--bg:#08090b;--fg:#ffffff;--mut:#c4c8d0;--ln:#3a3f4a;--hd:#1c2029;--cu:#6cb4ff;--am:#ffad55;--ok:#e0483a;--ag:#a986d9;--ca:#86e086;--warn:#ff5555}   /* 2026-10-17: 文字を明るく背景を黒く。錬成粉(ok)=☆本体☆ L19 と同じ #980000(2026-10-19)・方解石(ca)=緑。2026-10-26 ユーザー指定で黒銀(ag) #d0aaff→#a986d9・錬成粉(ok) #980000→#7a0000 に暗く → 同日訂正で明るく #e0483a */\n' +
   '*{box-sizing:border-box}\n' +
   'body{margin:0;padding:6px;background:var(--bg);color:var(--fg);font:12px/1.3 "Meiryo","Yu Gothic UI",sans-serif;width:max-content}\n' +
   'h1{font-size:12px;margin:0 0 4px;color:var(--mut);font-weight:normal}\n' +
@@ -896,7 +900,7 @@ var TP_MEMO_STYLE = '<style>\n' +
   '.how{margin-top:8px;border:1px solid var(--ln);padding:4px 6px;font-size:11px;line-height:1.45}\n' +
   '.how b{color:var(--fg)}.how ol{margin:2px 0 0;padding-left:18px}.how li{white-space:normal}.how .sp{font-size:10px}\n' +
   'tfoot td{color:var(--mut);text-align:center;font-size:11px}\n' +
-  'tfoot td.cu{color:var(--cu)}tfoot td.am{color:var(--am)}tfoot td.ag{color:var(--ag)}\n' +
+  'tfoot td.cu{color:var(--cu)}tfoot td.am{color:var(--am)}tfoot td.ag{color:var(--ag)}tfoot .nb{font-weight:normal}td.no{color:var(--warn);font-weight:normal;text-align:center}td.cid{color:var(--mut);text-align:right;font-size:11px}\n' +   /* 合計の数字・「取らない」は素材の色で、太字にしない(2026-10-24 ユーザー指定) */
   'html[lang=en] td.lk{white-space:normal;min-width:240px;max-width:320px}html[lang=en] table:not(.sk) tbody td:nth-child(2),html[lang=en] table:not(.sk) tr.d0 td:nth-child(2),html[lang=en] table:not(.sk) tr.d1 td:nth-child(2){white-space:normal;max-width:230px}\n' +   /* 英語版は説明が長いので折り返す(2026-10-20) */
   /* ウェブページの「予測されるランダムスキル」(2026-10-20) */ '.sk td{font-size:11px}.sk .sn{color:#9a9a9a;font-weight:normal}.sk .si{font-weight:bold}.sk .sb{color:#ff4fa3;font-weight:bold}.sk .so{color:#e06666}.sk .sa{color:#ff4040}.sk .sg{color:#5cbf5c;font-weight:bold}\n' +   /* sg = 対象装備以外の BS・攻撃力(方解石 #86e086 より少し濃い緑) */
   '</style>';
@@ -918,57 +922,68 @@ function tpMemoEsc_(s) {   // Python の html.escape と同じ
 // 英語版の文言(2026-10-20)。en = 英語の辞書(基準記録/lang/en.json = ページの TP_EN)。en が無ければ日本語
 var TP_MEMO_ABBR_EN = { '青銅の塊': 'Br', '琥珀の欠片': 'Am', '黒銀の塊': 'Si', '下級の錬成粉': 'Pw', '方解石の欠片': 'Ca' };
 var TP_MEMO_TXT = {
-  ja: { hdr: ['ID', 'フロア', '訪問区分', '見た目'], total: '合計(青銅 / 琥珀 / 黒銀 / 錬成粉 / 方解石)', take: '回収', skip: 'しない',
+  ja: { hdr: ['ID', 'フロア', '訪問区分', '見た目'], total: '合計(青銅 / 琥珀 / 黒銀 / 錬成粉 / 方解石)', take: '回収', skip: '取らない',
     kw: 'ゼクソン港 倉庫の琥珀の宝箱(エレノア①前)', k9: '⑨古びた槍(ヴェスター坑道 D09)', kt: '⑩トランクィッロ(カドニクス港、青銅3個未満なら回収)',
     kb: '⑪バッドソーンズ(レニードの街1回目、青銅2個未満なら回収)',
     warn: '上記の計画表に書かれていないトレジャーポイントは、光っていても拾わないでください。', free: '同じフロア内のトレジャーポイントであれば拾う順番は自由です。',
-    title: '本走メモ' },   // 「進行合計 = …」の見出しは 2026-10-21 ユーザー指定で削除(ページ下の注記に同じ説明がある)
+    title: '本走メモ',
+    // 宝箱の行(2026-10-26 ユーザー指定で上の表に統合): [フロア, 見た目]
+    chests: { kw: ['ゼクソン港 倉庫', '琥珀の宝箱(エレノア①前)'], k9: ['ヴェスター坑道 クロガネの工房', '⑨古びた槍'],
+      kt: ['カドニクス港', '⑩トランクィッロ(青銅3個未満なら回収)'], kb: ['レニードの街', '⑪バッドソーンズ(1回目、青銅2個未満なら回収)'] }, chestId: '宝箱' },   // 「進行合計 = …」の見出しは 2026-10-21 ユーザー指定で削除(ページ下の注記に同じ説明がある)
   en: { hdr: ['ID', 'Location', 'Visit', 'Where to look'], total: 'Total (Bronze / Amber / Silver / Powder / Calcite)', take: 'Take', skip: 'Skip',
     kw: 'Port Zekson warehouse Amber chest (before Eleanor 1)', k9: '⑨ Worn Spear (Vester Tunnels D09)', kt: '⑩ Tranquillo (Port Cadnix; take if Bronze &lt; 3)',
     kb: '⑪ Thorny Waistcoat (Reneed, 1st visit; take if Bronze &lt; 2)',
     warn: 'Do not pick up any treasure point not listed in the plan above, even if it glows.', free: 'Within the same floor, you may pick up the listed treasure points in any order.',
-    title: 'Run Memo' }
+    title: 'Run Memo',
+    chests: { kw: ['Port Zekson - Warehouse', 'Amber chest (before Eleanor 1)'], k9: ['Vester Tunnels - Kurogane\'s workshop', '⑨ Worn Spear'],
+      kt: ['Port Cadnix', '⑩ Tranquillo (take if Bronze &lt; 3)'], kb: ['Reneed', '⑪ Thorny Waistcoat (1st visit; take if Bronze &lt; 2)'] }, chestId: 'Chest' }
 };
 function tpMemoPlanTable_(res, en) {
   var T = TP_MEMO_TXT[en ? 'en' : 'ja'];
   var tr = function (dict, v) { return en && dict && v in dict ? dict[v] : v; };   // 訳が無ければ日本語のまま
-  var K = ['0', '1', '2', '3', '4'], cell = {}, firstOp = {}, info = {}, visit = {}, seenOrder = [];
+  var K = ['0', '1', '2', '3', '4'], cell = {}, firstOp = {}, info = {}, seenOrder = [];
+  // 行は「地点 × 訪問区分」ごと(2026-10-26 ユーザー指定: 列によって訪問区分が違う地点は <崖ツアー②/崖ツアー①> とまとめず別の行に)
   K.forEach(function (k) {
     cell[k] = {};
     res[k].picks.forEach(function (q) {
-      var pid = q.id;
+      var pid = q.id + '|' + (q.visit || '');
       cell[k][pid] = [en ? TP_MEMO_ABBR_EN[q.item] : TP_MEMO_ABBR[q.item][0], TP_MEMO_ABBR[q.item][1]];
       if (!(pid in firstOp)) seenOrder.push(pid);   // 同じ位置どうしは最初に出てきた順(Python の辞書と同じ)
       firstOp[pid] = Math.min(pid in firstOp ? firstOp[pid] : 1 << 30, q.op);   // ルート順 = 台本で拾う位置
       info[pid] = q;
-      (visit[pid] = visit[pid] || []).push(q.visit);
     });
   });
+  // 宝箱の行: 台本で開ける位置(meta.chestOp = TP_DATA.ops の番号)に差し込む(2026-10-26)。古い計画 JSON(chestOp なし)は表の下に出す
+  var CHEST = { kw: ['am', 'ゼクソン港'], k9: ['ag', 'ヴェスター坑道'], kt: ['cu', 'カドニクス港'], kb: ['cu', 'レニードの街'] };
+  var cop = (res.meta && res.meta.chestOp) || null;
+  if (cop) Object.keys(CHEST).forEach(function (c) { var key = 'chest|' + c; seenOrder.push(key); firstOp[key] = cop[c]; });
   var order = seenOrder.slice().sort(function (a, b) { return firstOp[a] - firstOp[b]; });
   var rows = [], dungeon = null, band = 1;   // ダンジョンごとに背景を交互に(2026-10-19 ユーザー依頼)
-  order.forEach(function (pid) {
-    var q = info[pid];
+  order.forEach(function (key) {
+    if (key.indexOf('chest|') === 0) {
+      var c = key.slice(6), cl = T.chests[c];
+      if (CHEST[c][1] !== dungeon) { dungeon = CHEST[c][1]; band = 1 - band; }
+      rows.push('<tr class="d' + band + '"><td class="cid">' + T.chestId + '</td><td>' + cl[0] + '</td><td class="vk"></td><td class="lk">' + cl[1] + '</td>' + chest(c, CHEST[c][0]) + '</tr>');
+      return;
+    }
+    var q = info[key], pid = q.id;
     if (q.area !== dungeon) { dungeon = q.area; band = 1 - band; }
     var lab = en ? (en.labels[pid] || [(tr(en.areas, q.area) + ' - ' + tr(en.floors, q.floor)).replace(/ - $/, ''), tr(en.looks, q.look)])
       : (TP_MEMO_LABEL[pid] || [(q.area + ' ' + q.floor).trim(), q.look]);
-    var seen = {}, vs = [];
-    visit[pid].forEach(function (v) { if (!(v in seen)) { seen[v] = 1; if (v) vs.push(tr(en && en.vnames, v)); } });
-    var vk = vs.join('/');   // 列によって訪問が違えば / で並べる(訪問が1回だけのフロアは空)
-    var tds = K.map(function (k) { return pid in cell[k] ? '<td class="c ' + cell[k][pid][1] + '">' + cell[k][pid][0] + '</td>' : '<td></td>'; }).join('');
+    var vk = q.visit ? tr(en && en.vnames, q.visit) : '';   // 訪問が1回だけのフロアは空
+    var tds = K.map(function (k) { return key in cell[k] ? '<td class="c ' + cell[k][key][1] + '">' + cell[k][key][0] + '</td>' : '<td></td>'; }).join('');
     rows.push('<tr class="d' + band + '"><td class="id">' + pid + '</td><td>' + tpMemoEsc_(lab[0]) + '</td><td class="vk">' +
       (vk ? '&lt;' + tpMemoEsc_(vk) + '&gt;' : '') + '</td><td class="lk">' + (en ? tpMemoEsc_(lab[1]).replace(/\n/g, '<br>') : tpMemoEsc_(lab[1])) + '</td>' + tds + '</tr>');
   });
+  var CNTCLS = ['cu', 'am', 'ag', 'ok', 'ca'];   // 合計の並び 青銅/琥珀/黒銀/錬成粉/方解石 の色(2026-10-24)
   function chest(key, cls) {
-    return K.map(function (k) { var on = res[k][key] === '回収'; return '<td class="' + (on ? cls : '') + '">' + (on ? T.take : T.skip) + '</td>'; }).join('');
+    return K.map(function (k) { var on = res[k][key] === '回収'; return '<td class="' + (on ? 'c ' + cls : 'no') + '">' + (on ? T.take : T.skip) + '</td>'; }).join('');
   }
   return '<table>\n' +
     '<tr>' + T.hdr.map(function (h) { return '<th>' + h + '</th>'; }).join('') + K.map(function (k) { return '<th class="pk">+' + k + '</th>'; }).join('') + '</tr>\n' +
     rows.join('\n') + '\n' +
-    '<tfoot><tr><td colspan="4">' + T.total + '</td>' + K.map(function (k) { return '<td>' + res[k].cnt + '</td>'; }).join('') + '</tr>\n' +
-    '<tr><td colspan="4">' + T.kw + '</td>' + chest('kw', 'am') + '</tr>\n' +
-    '<tr><td colspan="4">' + T.k9 + '</td>' + chest('k9', 'ag') + '</tr>\n' +
-    '<tr><td colspan="4">' + T.kt + '</td>' + chest('kt', 'cu') + '</tr>\n' +
-    '<tr><td colspan="4">' + T.kb + '</td>' + chest('kb', 'cu') + '</tr></tfoot>\n' +
+    '<tfoot><tr><td colspan="4">' + T.total + '</td>' + K.map(function (k) { return '<td>' + String(res[k].cnt).split('/').map(function (x, i) { return '<span class="' + CNTCLS[i] + ' nb">' + x + '</span>'; }).join('/') + '</td>'; }).join('') + '</tr>\n' +
+    (cop ? '' : ['kw', 'k9', 'kt', 'kb'].map(function (c) { return '<tr><td colspan="4">' + T[c] + '</td>' + chest(c, CHEST[c][0]) + '</tr>\n'; }).join('')) + '</tfoot>\n' +
     '</table>\n' +
     '<div class="nt"><span class="warn">' + T.warn + '</span></div>\n' +
     '<div class="nt">' + T.free + '</div>';   // 文言 2026-10-20 ユーザー指定
@@ -1894,7 +1909,7 @@ function tpSeedIsTop_(opts, c) {
     b_run: '&darr;Build plan&darr;', b_png_plan: 'Save PNG (pickup plan table only)', b_png_all: 'Save PNG (pickup plan / random skills / result lines tables, all)', b_reset: '&uarr;Reset to defaults&uarr;',
     skopt: 'Also show the random skills of gear you dismantle / cut when materials are plentiful.',
     n1: '+0 to +4 columns: Extra RNG Rolls (= how many more RNG calls than planned happened between NewGame and Burnack Plateau.)<br>= the sum of<ul><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; (+0~2)</li><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo; (+0~2)</li><li>Pickups (adjusting by picking up treasure points, Fire Ring, etc.) (+1)</li></ul>',
-    stamp: 'Plan logic: コード.js generated 2026-10-21 (sha256 cde992b00331) / page built 2026-10-22',
+    stamp: 'Plan logic: コード.js generated 2026-10-21 (sha256 cde992b00331) / page built 2026-10-26',
     tab_plan: 'TP pickup plan', tab_seed: 'Seed finder',
     sd_h_cost: '• Cost settings', sd_c_ng: 'NewGame re-press (each)', sd_c_half: 'Map move (per half round trip)', sd_c_load: 'Load &amp; return to title', sd_c_pick: 'Item pickup',
     sd_h_skill: '• Wanted random skills', sd_back: 'Back to the skill condition screen', sd_opt: 'Also specify skills for gear you dismantle / cut when materials are plentiful.',
