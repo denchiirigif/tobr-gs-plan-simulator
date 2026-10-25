@@ -101,10 +101,10 @@ label.memo-chk input{width:13px;height:13px;margin:0}
 .memotop{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:6px 0 0 6px}   /* 本走メモの枠の上: チェックボックスの右に ③④ PNG 保存(2026-10-22 ユーザー指定で表の少し上へ)。④ の右端を拾得計画の表の右端にそろえる(幅は fitMemo が決める) */
 .memotop .pngs{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
 button.green{background:#3c7a3a;border-color:#3c7a3a;color:#fff;font-weight:bold}   /* 「列の背景色」(2026-10-26 ユーザー指定で緑) */
-dialog#bgdlg{background:#161a21;color:var(--fg);border:1px solid var(--ln);border-radius:8px;padding:14px 16px;font-size:13px;min-width:22em}   /* 列の背景色のポップアップ(2026-10-26) */
+dialog#bgdlg{background:#18241b;color:var(--fg);border:1px solid var(--ln);border-radius:8px;padding:14px 16px;font-size:13px;min-width:22em}   /* 列の背景色のポップアップ(2026-10-26。本体 = 黒に近い淡い緑、見出しの帯 = ボタンと同じ緑) */
 dialog#bgdlg::backdrop{background:transparent}   /* 開いても画面を暗くしない(2026-10-26 ユーザー指定) */
 dialog#bgdlg{margin:0;position:fixed;top:80px;left:40px}   /* 位置は JS が決める(上の方。ドラッグで動かせ、最後の位置を覚える) */
-#bgdlg h3{margin:-14px -16px 10px;padding:10px 16px 8px;font-size:14px;cursor:move;user-select:none;border-bottom:1px solid var(--ln)}   /* 見出し = つかんで動かす所 */#bgdlg .r{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}#bgdlg [hidden]{display:none!important}
+#bgdlg h3{margin:-14px -16px 10px;padding:10px 16px 8px;font-size:14px;cursor:move;user-select:none;background:#3c7a3a;color:#fff;border-radius:7px 7px 0 0}   /* 見出し = つかんで動かす所 */#bgdlg .r{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}#bgdlg [hidden]{display:none!important}
 #bgdlg input[type=color]{width:60px;height:30px;padding:0 2px;cursor:pointer}#bgdlg .end{justify-content:flex-end;margin-top:12px}
 #pngbox{position:fixed;left:-20000px;top:0;border:0;width:4000px;height:3000px}   /* PNG 用の本走メモを描く見えない iframe */
 button{cursor:pointer;padding:5px 12px}
@@ -2171,7 +2171,8 @@ function tpSeedIsTop_(opts, c) {
   window.addEventListener('resize', fitMemo);
   // 列の背景色(2026-10-26 ユーザー指定): ダンジョン名(日本語)→ 色。初期の色 = ROWBG_DEF(2026-10-26 ユーザーがこのページで選んだ12色を登録)、
   // 各自の変更は ROWBG(このブラウザの localStorage。使えなければ保存しないだけ)。表の行には memo_render.js が data-a = ダンジョン名を付ける。
-  // 編集はポップアップ(dialog)。カラーピッカーの色は「決定」で初めて反映(表示中の表だけ塗り替え、PNG と次の計算は rowBgMap() から作る)。
+  // 編集はポップアップ(dialog)。カラーピッカーで選んでいる間は表に仮に塗る(保存しない)。「決定」で保存(PNG と次の計算は rowBgMap() から作る)。
+  // 決定せずに閉じる・ダンジョンを選び直す → 仮の色を元に戻す(2026-10-26 ユーザー指定)。
   // ポップアップの外を押す・Esc・閉じる = 決定していない色は捨てる。「すべて初期の色に戻す」は確認してから
   var ROWBG_DEF = {"西ラバン洞穴":"#132517","海門要塞 ヴォーティガン":"#28505d","ゼクソン港":"#3e240f","栄光ある王都 ローグレス":"#51451a","王都地下道":"#1d0628","ローグレス離宮":"#13213f","聖主の御座":"#2b5669","イボルク遺跡":"#3f2c2c","ヴェスター坑道":"#0b2251","カドニクス港":"#192858","レニードの街":"#365696","ワァーグ樹林":"#0d2f09"};
   var ROWBG = {};
@@ -2228,16 +2229,24 @@ function tpSeedIsTop_(opts, c) {
     var r = $('bgdlg').getBoundingClientRect();
     if (e.target === $('bgdlg') && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) $('bgdlg').close();
   });
-  $('bgdlg').addEventListener('close', function () { bgConfirm(false); });
-  $('bg_area').addEventListener('change', bgPick);
+  var bgTry = null;   // 仮に塗っているダンジョン
+  function bgPreview(a, c) {
+    var d = $('memo').contentDocument; if (!d) return;
+    d.querySelectorAll('tr[data-a="' + CSS.escape(a) + '"]').forEach(function (tr) { tr.classList.add('cb'); tr.style.setProperty('--rb', c); });
+    bgTry = a;
+  }
+  function bgRevert() { if (bgTry !== null) { bgApply(bgTry); bgTry = null; } }   // 保存してある色に戻す
+  $('bg_col').addEventListener('input', function () { var a = $('bg_area').value; if (!a) return; if (bgTry !== null && bgTry !== a) bgRevert(); bgPreview(a, $('bg_col').value); });
+  $('bgdlg').addEventListener('close', function () { bgRevert(); bgConfirm(false); });
+  $('bg_area').addEventListener('change', function () { bgRevert(); bgPick(); });
   $('bg_ok').addEventListener('click', function () {   // 決定
     var a = $('bg_area').value; if (!a) return;
     if ($('bg_col').value === ROWBG_DEF[a]) delete ROWBG[a]; else ROWBG[a] = $('bg_col').value;
-    saveBg(); bgApply(a); bgMark();
+    saveBg(); bgTry = null; bgApply(a); bgMark();
   });
-  $('bg_clear').addEventListener('click', function () { var a = $('bg_area').value; if (!a) return; delete ROWBG[a]; saveBg(); bgApply(a); bgMark(); bgPick(); });
+  $('bg_clear').addEventListener('click', function () { var a = $('bg_area').value; if (!a) return; delete ROWBG[a]; saveBg(); bgTry = null; bgApply(a); bgMark(); bgPick(); });
   $('bg_clearall').addEventListener('click', function () { bgConfirm(true); });
-  $('bg_yes').addEventListener('click', function () { var as = Object.keys(ROWBG); ROWBG = {}; saveBg(); as.forEach(bgApply); bgFill(); bgConfirm(false); });
+  $('bg_yes').addEventListener('click', function () { var as = Object.keys(ROWBG); ROWBG = {}; saveBg(); bgRevert(); as.forEach(bgApply); bgFill(); bgConfirm(false); });
   $('bg_no').addEventListener('click', function () { bgConfirm(false); });
   $('bg_close').addEventListener('click', function () { $('bgdlg').close(); });
   function show(res) {
