@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
+<meta name="darkreader-lock">   <!-- 拡張機能 Dark Reader に色を書き換えさせない(本走メモの iframe にも入れる。2026-10-26: ユーザーの Edge で行の背景色・PNG の文字色が消えた原因) -->
 <title>本走メモ作成</title>
 <meta name="description" content="テイルズ オブ ベルセリア リマスター RTA のトレジャーポイント拾得計画(本走メモ)を NewGame までの操作と目標から作るページ">
 <style>
@@ -1025,7 +1026,7 @@ function tpMemoBody_(res, how, web) {
 
 function tpMemoHtml_(res, how, web) {
   var en = web && web.en;
-  return '<!doctype html>\n<html lang="' + (en ? 'en' : 'ja') + '"><head><meta charset="utf-8"><title>' + TP_MEMO_TXT[en ? 'en' : 'ja'].title + ' GS' + res.meta.gs + '</title>\n' + TP_MEMO_STYLE + '</head><body>\n' +
+  return '<!doctype html>\n<html lang="' + (en ? 'en' : 'ja') + '"><head><meta charset="utf-8">' + (web ? '<meta name="darkreader-lock">' : '') + '<title>' + TP_MEMO_TXT[en ? 'en' : 'ja'].title + ' GS' + res.meta.gs + '</title>\n' + TP_MEMO_STYLE + '</head><body>\n' +
     tpMemoBody_(res, how, web) + '</body></html>\n';
 }
 
