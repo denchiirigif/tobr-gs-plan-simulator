@@ -102,8 +102,9 @@ label.memo-chk input{width:13px;height:13px;margin:0}
 .memotop .pngs{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
 button.green{background:#3c7a3a;border-color:#3c7a3a;color:#fff;font-weight:bold}   /* 「列の背景色」(2026-10-26 ユーザー指定で緑) */
 dialog#bgdlg{background:#161a21;color:var(--fg);border:1px solid var(--ln);border-radius:8px;padding:14px 16px;font-size:13px;min-width:22em}   /* 列の背景色のポップアップ(2026-10-26) */
-dialog#bgdlg::backdrop{background:rgba(0,0,0,.55)}
-#bgdlg h3{margin:0 0 10px;font-size:14px}#bgdlg .r{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}#bgdlg [hidden]{display:none!important}
+dialog#bgdlg::backdrop{background:transparent}   /* 開いても画面を暗くしない(2026-10-26 ユーザー指定) */
+dialog#bgdlg{margin:0;position:fixed;top:80px;left:40px}   /* 位置は JS が決める(上の方。ドラッグで動かせ、最後の位置を覚える) */
+#bgdlg h3{margin:-14px -16px 10px;padding:10px 16px 8px;font-size:14px;cursor:move;user-select:none;border-bottom:1px solid var(--ln)}   /* 見出し = つかんで動かす所 */#bgdlg .r{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}#bgdlg [hidden]{display:none!important}
 #bgdlg input[type=color]{width:60px;height:30px;padding:0 2px;cursor:pointer}#bgdlg .end{justify-content:flex-end;margin-top:12px}
 #pngbox{position:fixed;left:-20000px;top:0;border:0;width:4000px;height:3000px}   /* PNG 用の本走メモを描く見えない iframe */
 button{cursor:pointer;padding:5px 12px}
@@ -910,7 +911,7 @@ var TP_MEMO_STYLE = '<style>\n' +
   '.how{margin-top:8px;border:1px solid var(--ln);padding:4px 6px;font-size:11px;line-height:1.45}\n' +
   '.how b{color:var(--fg)}.how ol{margin:2px 0 0;padding-left:18px}.how li{white-space:normal}.how .sp{font-size:10px}\n' +
   'tfoot td{color:var(--mut);text-align:center;font-size:11px}\n' +
-  'tfoot td.cu{color:var(--cu)}tfoot td.am{color:var(--am)}tfoot td.ag{color:var(--ag)}tfoot .nb{font-weight:normal}td.no{color:var(--warn);font-weight:normal;text-align:center}td.cid{color:var(--mut);text-align:right;font-size:11px}\n' +   /* 合計の数字・「取らない」は素材の色で、太字にしない(2026-10-24 ユーザー指定) */
+  'tfoot td.cu{color:var(--cu)}tfoot td.am{color:var(--am)}tfoot td.ag{color:var(--ag)}tfoot .nb{font-weight:normal}td.no{color:#ff8cc6;font-weight:normal;text-align:center}td.cid{color:var(--mut);text-align:right;font-size:11px}\n' +   /* 合計の数字・「取らない」は素材の色で、太字にしない(2026-10-24 ユーザー指定) */
   'html[lang=en] td.lk{white-space:normal;min-width:240px;max-width:320px}html[lang=en] table:not(.sk) tbody td:nth-child(2),html[lang=en] table:not(.sk) tr.d0 td:nth-child(2),html[lang=en] table:not(.sk) tr.d1 td:nth-child(2){white-space:normal;max-width:230px}\n' +   /* 英語版は説明が長いので折り返す(2026-10-20) */
   /* ウェブページの「予測されるランダムスキル」(2026-10-20) */ '.sk td{font-size:11px}.sk .sn{color:#9a9a9a;font-weight:normal}.sk .si{font-weight:bold}.sk .sb{color:#ff4fa3;font-weight:bold}.sk .so{color:#e06666}.sk .sa{color:#ff4040}.sk .sg{color:#5cbf5c;font-weight:bold}\n' +   /* sg = 対象装備以外の BS・攻撃力(方解石 #86e086 より少し濃い緑) */
   '</style>';
@@ -2203,8 +2204,30 @@ function tpSeedIsTop_(opts, c) {
   }
   function bgMark() { var o = $('bg_area').selectedOptions[0]; if (o) o.innerHTML = bgLabel(o.value); }
   function bgConfirm(show) { $('bg_ask').hidden = !show; $('bg_main').hidden = show; }
-  $('bgbtn').addEventListener('click', function () { bgConfirm(false); bgFill(); $('bgdlg').showModal(); });
-  $('bgdlg').addEventListener('click', function (e) { if (e.target === $('bgdlg')) $('bgdlg').close(); });   // ポップアップの外(背景)を押したら閉じる
+  // ポップアップの位置(2026-10-26 ユーザー指定): 初めは画面の上の方・左右の中央。見出しをつかんでドラッグで動かせ、最後の位置をこのブラウザに覚える(localStorage tpBgDlgPos)
+  function bgPlace(x, y) {   // 画面からはみ出さないように置く
+    var dl = $('bgdlg'), w = dl.offsetWidth, h = dl.offsetHeight;
+    x = Math.max(0, Math.min(x, innerWidth - w)); y = Math.max(0, Math.min(y, innerHeight - h));
+    dl.style.left = x + 'px'; dl.style.top = y + 'px';
+  }
+  $('bgbtn').addEventListener('click', function () {
+    bgConfirm(false); bgFill(); $('bgdlg').showModal();
+    var pos = null; try { pos = JSON.parse(localStorage.getItem('tpBgDlgPos') || 'null'); } catch (e) { pos = null; }
+    if (pos) bgPlace(pos[0], pos[1]); else bgPlace((innerWidth - $('bgdlg').offsetWidth) / 2, 80);
+  });
+  (function () {   // 見出しのドラッグ
+    var h = $('bgdlg').querySelector('h3'), dx = 0, dy = 0, on = false;
+    h.addEventListener('pointerdown', function (e) { var r = $('bgdlg').getBoundingClientRect(); on = true; dx = e.clientX - r.left; dy = e.clientY - r.top; h.setPointerCapture(e.pointerId); e.preventDefault(); });
+    h.addEventListener('pointermove', function (e) { if (on) bgPlace(e.clientX - dx, e.clientY - dy); });
+    h.addEventListener('pointerup', function () {
+      if (!on) return; on = false;
+      var r = $('bgdlg').getBoundingClientRect(); try { localStorage.setItem('tpBgDlgPos', JSON.stringify([Math.round(r.left), Math.round(r.top)])); } catch (e) {}
+    });
+  })();
+  $('bgdlg').addEventListener('click', function (e) {   // ポップアップの外を押したら閉じる(モーダルの外側のクリックは dialog 自身に届く。枠の内側の余白と区別するため座標で判定)
+    var r = $('bgdlg').getBoundingClientRect();
+    if (e.target === $('bgdlg') && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) $('bgdlg').close();
+  });
   $('bgdlg').addEventListener('close', function () { bgConfirm(false); });
   $('bg_area').addEventListener('change', bgPick);
   $('bg_ok').addEventListener('click', function () {   // 決定
