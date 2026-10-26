@@ -134,7 +134,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <h1 data-i18n="h1">本走メモ作成(ベルセリア リマスター RTA トレジャーポイント拾得計画)</h1>
 <label class="lang"><input type="checkbox" id="lang"> English</label>
 </div>
-<p class="lead" data-i18n="lead">NewGame までの操作(または n0)と目標確保数を入れて「↓計画を出力↓」を押すと、本走メモ(拾得計画の表)ができます。計算はすべてこのブラウザの中で行います。</p>
+<p class="lead" data-i18n="lead">NewGame までの操作(または n0)と目標確保数を入力して、「↓計画を出力↓」を押すと、本走用のメモ(拾得計画の表)が出力されます。<br>表の背景色、見た目欄の文言のデータは、各自のブラウザに保存されます。</p>
 </header>
 <nav class="tabs">
 <button class="tab on" id="tab_plan" data-i18n="tab_plan">TP拾得表計画の作成</button>
@@ -946,7 +946,7 @@ var TP_MEMO_TXT = {
   ja: { hdr: ['ID', 'フロア', '訪問区分', '見た目'], total: '合計(青銅 / 琥珀 / 黒銀 / 錬成粉 / 方解石)', take: '回収', skip: '取らない',
     kw: 'ゼクソン港 倉庫の琥珀の宝箱(エレノア①前)', k9: '⑨古びた槍(ヴェスター坑道 D09)', kt: '⑩トランクィッロ(カドニクス港、青銅3個未満なら回収)',
     kb: '⑪バッドソーンズ(レニードの街1回目、青銅2個未満なら回収)',
-    warn: '上記の計画表に書かれていないトレジャーポイントは、光っていても拾わないでください。', free: '同じフロア内のトレジャーポイントであれば拾う順番は自由です。',
+    warn: '上記の計画表に書かれていないトレジャーポイントは、光っていても拾わないでください。', free: '同じフロア内の宝箱・トレジャーポイントであれば拾う順番は自由です。',
     title: '本走メモ',
     // 宝箱の行(2026-10-26 ユーザー指定で上の表に統合): [フロア, 見た目]
     chests: { kw: ['ゼクソン港 倉庫', '琥珀の宝箱(エレノア①前)'], k9: ['ヴェスター坑道 クロガネの工房', '⑨古びた槍'],
@@ -954,7 +954,7 @@ var TP_MEMO_TXT = {
   en: { hdr: ['ID', 'Location', 'Visit', 'Where to look'], total: 'Total (Bronze / Amber / Silver / Powder / Calcite)', take: 'Take', skip: 'Skip',
     kw: 'Port Zekson warehouse Amber chest (before Eleanor 1)', k9: '⑨ Worn Spear (Vester Tunnels D09)', kt: '⑩ Tranquillo (Port Cadnix; take if Bronze &lt; 3)',
     kb: '⑪ Thorny Waistcoat (Reneed, 1st visit; take if Bronze &lt; 2)',
-    warn: 'Do not pick up any treasure point not listed in the plan above, even if it glows.', free: 'Within the same floor, you may pick up the listed treasure points in any order.',
+    warn: 'Do not pick up any treasure point not listed in the plan above, even if it glows.', free: 'Within the same floor, you may open the listed chests and pick up the listed treasure points in any order.',
     title: 'Run Memo',
     chests: { kw: ['Port Zekson - Warehouse', 'Amber chest (before Eleanor 1)'], k9: ['Vester Tunnels - Kurogane\'s workshop', '⑨ Worn Spear'],
       kt: ['Port Cadnix', '⑩ Tranquillo (take if Bronze &lt; 3)'], kb: ['Reneed', '⑪ Thorny Waistcoat (1st visit; take if Bronze &lt; 2)'] }, chestId: 'Chest' }
@@ -1925,7 +1925,7 @@ function tpSeedIsTop_(opts, c) {
   // 英語版のページの文言(2026-10-20)。キー = HTML の data-i18n。日本語は HTML に書いてあるもの
   var I18N = {
     h1: 'Run Memo Builder (Tales of Berseria Remastered RTA &mdash; treasure point pickup plan)',
-    lead: 'Enter your actions before NewGame (or n0) and your target counts, then press &ldquo;&darr;Build plan&darr;&rdquo; to make the run memo (pickup plan table). Everything is calculated in your browser.',
+    lead: 'Enter your actions before NewGame (or n0) and your target counts, then press &ldquo;&darr;Build plan&darr;&rdquo; to output the run memo (pickup plan table).<br>Your table colors and &ldquo;Where to look&rdquo; texts are saved in your own browser.',
     h_ops: '• Actions before NewGame', th_op: 'Action', th_cnt: 'Times', th_rng: 'RNG calls',
     op_boot: 'Launch &rarr; first title screen (17324)', fixed1: '1 (fixed)',
     op_ld: 'Load a save (including quick load)<br>Choose &ldquo;Return to Title&rdquo; in another save<br>Lose a battle and see the retry screen',
@@ -2346,7 +2346,7 @@ function tpSeedIsTop_(opts, c) {
     var st = d.createElement('style'); st.textContent = LK_CSS; d.head.appendChild(st);
     d.querySelectorAll('td.lk[data-k]').forEach(function (td) {
       td.classList.toggle('my', !!LOOKS[td.dataset.k]);
-      td.insertAdjacentHTML('beforeend', '<button class="pen" title="' + escH(T('文言を編集', 'Edit text')) + '">' + LK_PEN + '</button>');
+      td.insertAdjacentHTML('beforeend', '<button class="pen" title="' + escH(T('見た目の文言を編集', 'Edit the “Where to look” text')) + '">' + LK_PEN + '</button>');
     });
     d.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('td.lk .pen'); if (b) { lkCancel(); lkOpen(b.closest('td')); } });
     d.addEventListener('pointerdown', function (e) { if (lkEdit && !lkEdit.td.contains(e.target)) lkCancel(); }, true);
