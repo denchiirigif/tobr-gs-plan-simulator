@@ -52,7 +52,7 @@ table.sd-res button{padding:2px 10px;font-size:12px}
 label.lang{font-size:13px;display:flex;gap:6px;align-items:center;cursor:pointer;border:1px solid var(--ln);border-radius:4px;padding:2px 8px}
 label.lang input{width:15px;height:15px}
 h1{font-size:18px;margin:0 0 2px}
-.lead{color:var(--mut);font-size:12px;margin:0}.lead .ind{padding-left:1.5em}   /* 手順 3 の結果の行を字下げ(2026-10-26) */
+.lead{color:var(--mut);font-size:12px;margin:0}.score{color:var(--mut);font-size:12px;margin:0 0 4px}   /* ②の見出しの上のスコアの説明(左端は見出しと同じ。2026-10-26) */
 main{padding:8px 16px 24px;display:flex;flex-direction:column;gap:12px}
 .panel{background:var(--pn);border:1px solid var(--ln);border-radius:6px;padding:10px 12px;max-width:100%}
 h2{font-size:14px;margin:0 0 6px}
@@ -135,7 +135,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <h1 data-i18n="h1">本走メモ作成(ベルセリア リマスター RTA トレジャーポイント拾得計画)</h1>
 <label class="lang"><input type="checkbox" id="lang"> English</label>
 </div>
-<p class="lead" data-i18n="lead">1. NewGameまでの操作またはn0の欄を記入します。<br>2. トレジャーポイントからの目標拾得数を記入します。<br>3. 「↓計画表を出力↓」ボタンを押します<br><span class="ind">→ 本走用のメモ(拾得計画の表)が出力されます。</span></p>
+<p class="lead" data-i18n="lead">1. NewGameまでの操作、またはn0の欄を記入します。<br>2. トレジャーポイントからの目標拾得数を記入します。<br>3. 「↓計画表を出力↓」ボタンを押します。 &rarr; 本走用のメモ(拾得計画の表)が出力されます。</p>
 </header>
 <nav class="tabs">
 <button class="tab on" id="tab_plan" data-i18n="tab_plan">TP拾得計画表の作成</button>
@@ -169,6 +169,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </div>
 </div>
 <div class="col">
+<div class="score" data-i18n="score">スコア = 青銅の塊 10点 / 琥珀の欠片 3点 / 黒銀の塊 3点 / 方解石の欠片 2点 / 下級の錬成粉 1点<br>として、スコアが一番高くなる拾い方を選びます。</div>
 <h2 data-i18n="h_goals">・トレジャーポイントからの目標拾得数</h2>
 <table class="goals">
 <thead><tr><th data-i18n="th_mat">拾得素材</th><th data-i18n="th_cap">目標確保数</th><th data-i18n="th_cost">許容立ち寄りコスト</th></tr></thead>
@@ -1927,7 +1928,7 @@ function tpSeedIsTop_(opts, c) {
   // 英語版のページの文言(2026-10-20)。キー = HTML の data-i18n。日本語は HTML に書いてあるもの
   var I18N = {
     h1: 'Run Memo Builder (Tales of Berseria Remastered RTA &mdash; treasure point pickup plan)',
-    lead: '1. Fill in your actions before NewGame, or n0.<br>2. Fill in your pickup targets from treasure points.<br>3. Press the &ldquo;&darr;Build plan&darr;&rdquo; button<br><span class="ind">&rarr; The run memo (pickup plan table) is output.</span>', savenote: '* When you edit the table colors or &ldquo;Where to look&rdquo; texts, your changes are saved in your own browser automatically.',
+    lead: '1. Fill in your actions before NewGame, or n0.<br>2. Fill in your pickup targets from treasure points.<br>3. Press the &ldquo;&darr;Build plan&darr;&rdquo; button. &rarr; The run memo (pickup plan table) is output.', savenote: '* When you edit the table colors or &ldquo;Where to look&rdquo; texts, your changes are saved in your own browser automatically.',
     h_ops: '• Actions before NewGame', th_op: 'Action', th_cnt: 'Times', th_rng: 'RNG calls',
     op_boot: 'Launch &rarr; first title screen (17324)', fixed1: '1 (fixed)',
     op_ld: 'Load a save (including quick load)<br>Choose &ldquo;Return to Title&rdquo; in another save<br>Lose a battle and see the retry screen',
@@ -1940,7 +1941,7 @@ function tpSeedIsTop_(opts, c) {
     fn1: '<b class="blue">※1</b>: Load a save point near a location change and adjust by going back and forth between maps.',
     fn2: '<b class="red">※2</b>: Back out of the Grade Shop to the title without doing anything and select NewGame again for another +8662, as many times as you like.',
     fn3: '<b class="pur">※3</b>: When a line plays on the battle result screen, the RNG advances 0&ndash;2 times. (uncontrollable)',
-    h_goals: '• Pickup targets from treasure points', th_mat: 'Material', th_cap: 'Target count', th_cost: 'Max detour cost',
+    score: 'Score = Bronze Scrap 10 pts / Amber Fragment 3 pts / Silver Scrap 3 pts / Calcite Fragment 2 pts / Coarse Tempering Powder 1 pt<br>The way of picking up with the highest score is chosen.', h_goals: '• Pickup targets from treasure points', th_mat: 'Material', th_cap: 'Target count', th_cost: 'Max detour cost',
     h_bt: '• Extra RNG rolls from result lines',
     bt_lead: 'In the two battles below in Titania, the result-line roll adds an uncertain number of RNG calls.<br>&ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; / &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo;',
     b_run: '&darr;Build plan&darr;', b_png_plan: 'Save PNG (pickup plan table only)', b_bg: 'Table colors', bg_title: 'Table colors', bg_area: 'Dungeon', bg_ok: 'Apply', bg_clear: 'Reset this dungeon', bg_clearall: 'Reset all', bg_ask: 'Reset every dungeon to its default color?', bg_yes: 'Reset', bg_no: 'Cancel', bg_close: 'Close', b_png_all: 'Save PNG (pickup plan / random skills / result lines tables, all)', b_reset: '&uarr;Reset to defaults&uarr;',
