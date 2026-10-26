@@ -915,7 +915,7 @@ var TP_MEMO_STYLE = '<style>\n' +
   '.row{display:flex;gap:10px;align-items:stretch}\n' +
   '.lc{display:flex;flex-direction:column;justify-content:space-between;width:min-content}\n' +
   'tr.d1 td{background:#1f2430}\n' +
-  'tr.cb td{background:var(--rb)}\n' +   /* ダンジョンごとの背景色(ウェブページの「列の背景色」で指定したとき、2026-10-26) */
+  'tr.cb td{background:var(--rb);border-color:var(--rl,var(--ln))}\n' +   /* ダンジョンごとの背景色(ウェブページの「列の背景色」で指定したとき、2026-10-26)。格子の線は行の色に合わせた色(tpMemoLine_) */
   '.how{margin-top:8px;border:1px solid var(--ln);padding:4px 6px;font-size:11px;line-height:1.45}\n' +
   '.how b{color:var(--fg)}.how ol{margin:2px 0 0;padding-left:18px}.how li{white-space:normal}.how .sp{font-size:10px}\n' +
   'tfoot td{color:var(--mut);text-align:center;font-size:11px}\n' +
@@ -957,6 +957,14 @@ var TP_MEMO_TXT = {
     chests: { kw: ['Port Zekson - Warehouse', 'Amber chest (before Eleanor 1)'], k9: ['Vester Tunnels - Kurogane\'s workshop', '⑨ Worn Spear'],
       kt: ['Port Cadnix', '⑩ Tranquillo (take if Bronze &lt; 3)'], kb: ['Reneed', '⑪ Thorny Waistcoat (1st visit; take if Bronze &lt; 2)'] }, chestId: 'Chest' }
 };
+// 行の背景色 c(#rrggbb)に合わせた格子の線の色(2026-10-26 ユーザー指定 案A): 暗い色なら白を 25% 混ぜて明るく、明るい色なら黒を 30% 混ぜて暗く
+// → どの色を選んでも線が背景に溶け込まない。ウェブページの色の編集(仮塗り)でも使う
+function tpMemoLine_(c) {
+  var m = /^#?([0-9a-f]{6})$/i.exec(String(c)); if (!m) return '';
+  var n = parseInt(m[1], 16), rgb = [n >> 16, (n >> 8) & 255, n & 255];
+  var lum = (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255, dark = lum < 0.5;
+  return '#' + rgb.map(function (x) { var y = dark ? x + (255 - x) * 0.25 : x * 0.7; return ('0' + Math.round(y).toString(16)).slice(-2); }).join('');
+}
 // bg = ウェブページのときだけ { ダンジョン名: 色 }(行に data-a = ダンジョン名を付け、色があればその色の背景。2026-10-26 ユーザー指定)
 function tpMemoPlanTable_(res, en, bg) {
   var T = TP_MEMO_TXT[en ? 'en' : 'ja'];
@@ -990,12 +998,13 @@ function tpMemoPlanTable_(res, en, bg) {
     if (q.area !== dungeon) { dungeon = q.area; band = 1 - band; }
     var lab = en ? (en.labels[pid] || [(tr(en.areas, q.area) + ' - ' + tr(en.floors, q.floor)).replace(/ - $/, ''), tr(en.looks, q.look)])
       : (TP_MEMO_LABEL[pid] || [(q.area + ' ' + q.floor).trim(), q.look]);
+    if (!en) lab = [lab[0].replace(/^海門要塞 /, ''), lab[1]];   // 「海門要塞 ヴォーティガン …」と「ヴォーティガン …」が混ざるので付けない方にそろえる(2026-10-26 ユーザー指定)
     var vk = q.visit ? tr(en && en.vnames, q.visit) : '';   // 訪問が1回だけのフロアは空
     var tds = K.map(function (k) { return key in cell[k] ? '<td class="c ' + cell[k][key][1] + '">' + cell[k][key][0] + '</td>' : '<td></td>'; }).join('');
     rows.push(trOpen(dungeon) + '<td class="id">' + pid + '</td><td>' + tpMemoEsc_(lab[0]) + '</td><td class="vk">' +
       (vk ? '&lt;' + tpMemoEsc_(vk) + '&gt;' : '') + '</td><td class="lk">' + (en ? tpMemoEsc_(lab[1]).replace(/\n/g, '<br>') : tpMemoEsc_(lab[1])) + '</td>' + tds + '</tr>');
   });
-  function trOpen(a) { return '<tr class="d' + band + (bg && bg[a] ? ' cb" style="--rb:' + bg[a] : '') + '"' + (bg ? ' data-a="' + tpMemoEsc_(a) + '"' : '') + '>'; }
+  function trOpen(a) { return '<tr class="d' + band + (bg && bg[a] ? ' cb" style="--rb:' + bg[a] + ';--rl:' + tpMemoLine_(bg[a]) : '') + '"' + (bg ? ' data-a="' + tpMemoEsc_(a) + '"' : '') + '>'; }
   var CNTCLS = ['cu', 'am', 'ag', 'ok', 'ca'];   // 合計の並び 青銅/琥珀/黒銀/錬成粉/方解石 の色(2026-10-24)
   function chest(key, cls) {
     return K.map(function (k) { var on = res[k][key] === '回収'; return '<td class="' + (on ? 'c ' + cls : 'no') + '">' + (on ? T.take : T.skip) + '</td>'; }).join('');
@@ -1247,7 +1256,7 @@ function tpSeedIsTop_(opts, c) {
   'use strict';
   var LOGIC = document.getElementById('logic').textContent;
   // 計算ロジック(コード.js)をこのページのスコープでも1回だけ読む(GlobalSeed の表示・Worker が使えないときの計算用)
-  var L = new Function(LOGIC + '\n;return {tpJump_:tpJump_,tpVal_:tpVal_,tpMemoPlan_:tpMemoPlan_,tpMemoHtml_:tpMemoHtml_,tpMemoSkills_:tpMemoSkills_,TP_MEMO_BATTLE:TP_MEMO_BATTLE,tpSeedSearch_:tpSeedSearch_,tpSeedCount_:tpSeedCount_,tpSeedOptions_:tpSeedOptions_,tpSeedIsTop_:tpSeedIsTop_,tpSkillCode_:tpSkillCode_,tpSkillColor_:tpSkillColor_,TP_SKILL_ROWS:TP_SKILL_ROWS,TP_SKILL_NAMES:TP_SKILL_NAMES,TP_SKILL_PLACE_EN:TP_SKILL_PLACE_EN,TP_SKILL_SUFFIX_EN:TP_SKILL_SUFFIX_EN};')();
+  var L = new Function(LOGIC + '\n;return {tpJump_:tpJump_,tpVal_:tpVal_,tpMemoPlan_:tpMemoPlan_,tpMemoHtml_:tpMemoHtml_,tpMemoSkills_:tpMemoSkills_,TP_MEMO_BATTLE:TP_MEMO_BATTLE,tpSeedSearch_:tpSeedSearch_,tpSeedCount_:tpSeedCount_,tpSeedOptions_:tpSeedOptions_,tpSeedIsTop_:tpSeedIsTop_,tpSkillCode_:tpSkillCode_,tpSkillColor_:tpSkillColor_,tpMemoLine_:tpMemoLine_,TP_SKILL_ROWS:TP_SKILL_ROWS,TP_SKILL_NAMES:TP_SKILL_NAMES,TP_SKILL_PLACE_EN:TP_SKILL_PLACE_EN,TP_SKILL_SUFFIX_EN:TP_SKILL_SUFFIX_EN};')();
   // 素材の並び・既定の目標(2026-10-20 ユーザー指定: 青銅4・琥珀4・錬成粉3・黒銀1・方解石1、許容コストはすべて A)
   var ITEMS = [['青銅の塊', '青銅の塊', 4, 'A', '#6e9bff'], ['琥珀の欠片', '琥珀の欠片', 4, 'A', '#ff9900'], ['下級の錬成粉', '下級の錬成粉', 3, 'A', '#980000'],
     ['黒銀の塊', '黒銀の塊', 1, 'A', '#9900ff'], ['方解石の欠片', '方解石の欠片', 1, 'A', '#6aa84f']];   // 5番目 = 素材名の色(元シート ☆本体☆ L17:L21。青銅 #0000ff・方解石 #274e13 は黒地用に明るく)
@@ -2195,7 +2204,7 @@ function tpSeedIsTop_(opts, c) {
     return seen;
   }
   function rgbHex(c) { var m = String(c).match(/[\d.]+/g); if (!m || (m.length > 3 && Number(m[3]) === 0)) return '#08090b'; return '#' + m.slice(0, 3).map(function (x) { return ('0' + Number(x).toString(16)).slice(-2); }).join(''); }
-  function bgLabel(a) { return escH(isEn() ? (TP_EN.areas && TP_EN.areas[a]) || a : a) + (ROWBG[a] ? ' ●' : ''); }   // ● = 初期の色から変えたダンジョン
+  function bgLabel(a) { return escH(isEn() ? (TP_EN.areas && TP_EN.areas[a]) || a : a.replace(/^海門要塞 /, '')) + (ROWBG[a] ? ' ●' : ''); }   // ● = 初期の色から変えたダンジョン
   function bgFill() {   // ダンジョンのプルダウンを今の表から作り直す
     var sel = $('bg_area'), keep = sel.value, as = bgAreas();
     sel.innerHTML = as.map(function (a) { return '<option value="' + escH(a) + '">' + bgLabel(a) + '</option>'; }).join('');
@@ -2210,7 +2219,7 @@ function tpSeedIsTop_(opts, c) {
   function bgApply(a) {   // 表示中の表のそのダンジョンの行を塗り替える
     var d = $('memo').contentDocument, c = rowBgMap()[a]; if (!d) return;
     d.querySelectorAll('tr[data-a="' + CSS.escape(a) + '"]').forEach(function (tr) {
-      if (c) { tr.classList.add('cb'); tr.style.setProperty('--rb', c); } else { tr.classList.remove('cb'); tr.style.removeProperty('--rb'); }
+      if (c) { tr.classList.add('cb'); tr.style.setProperty('--rb', c); tr.style.setProperty('--rl', L.tpMemoLine_(c)); } else { tr.classList.remove('cb'); tr.style.removeProperty('--rb'); tr.style.removeProperty('--rl'); }
     });
   }
   function bgMark() { var o = $('bg_area').selectedOptions[0]; if (o) o.innerHTML = bgLabel(o.value); }
@@ -2242,7 +2251,7 @@ function tpSeedIsTop_(opts, c) {
   var bgTry = null;   // 仮に塗っているダンジョン
   function bgPreview(a, c) {
     var d = $('memo').contentDocument; if (!d) return;
-    d.querySelectorAll('tr[data-a="' + CSS.escape(a) + '"]').forEach(function (tr) { tr.classList.add('cb'); tr.style.setProperty('--rb', c); });
+    d.querySelectorAll('tr[data-a="' + CSS.escape(a) + '"]').forEach(function (tr) { tr.classList.add('cb'); tr.style.setProperty('--rb', c); tr.style.setProperty('--rl', L.tpMemoLine_(c)); });
     bgTry = a;
   }
   function bgRevert() { if (bgTry !== null) { bgApply(bgTry); bgTry = null; } }   // 保存してある色に戻す
