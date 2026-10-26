@@ -175,7 +175,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <tbody id="goals"></tbody>
 </table>
 <h2 class="pur" data-i18n="h_bt">・リザルトセリフによるExtra RNG Rollsの増分表</h2>
-<div class="bt-lead" data-i18n="bt_lead">タイタニアの下記2戦闘で、リザルトセリフ抽選による不定の増分がある。<br>『対魔士1+傭兵1』/『対魔士1+傭兵2』</div>
+<div class="bt-lead" data-i18n="bt_lead">タイタニアの下記2戦闘で、リザルトセリフ抽選による不定の乱数消費がある。<br>『対魔士1+傭兵1』/『対魔士1+傭兵2』</div>
 <div id="battle" class="battle"></div>
 </div>
 </div>
@@ -188,7 +188,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <hr class="sep">
 <div class="memobar" id="memobar">
 <span class="gsline" id="gsline"></span>
-<span class="savenote" id="savenote" data-i18n="savenote">表の背景色、見た目の文言は、編集して各自のブラウザに変更を保存することが出来ます。</span>
+<span class="savenote" id="savenote" data-i18n="savenote">※ 表の背景色、見た目の文言を編集すると、自動で各自のブラウザに変更が保存されます。</span>
 </div>
 <div class="memo-wrap"><div class="memotop" id="memotop"><label class="chk memo-chk"><input type="checkbox" id="skopt"> <span data-i18n="skopt">分解する装備 / 素材潤沢ならカットする装備 のランダムスキルも表示する。</span></label>
 <span class="pngs">
@@ -1927,7 +1927,7 @@ function tpSeedIsTop_(opts, c) {
   // 英語版のページの文言(2026-10-20)。キー = HTML の data-i18n。日本語は HTML に書いてあるもの
   var I18N = {
     h1: 'Run Memo Builder (Tales of Berseria Remastered RTA &mdash; treasure point pickup plan)',
-    lead: 'Enter your actions before NewGame (or n0) and your target counts, then press the &ldquo;&darr;Build plan&darr;&rdquo; button to output the run memo (pickup plan table).', savenote: 'You can edit the table colors and &ldquo;Where to look&rdquo; texts; your changes are saved in your own browser.',
+    lead: 'Enter your actions before NewGame (or n0) and your target counts, then press the &ldquo;&darr;Build plan&darr;&rdquo; button to output the run memo (pickup plan table).', savenote: '* When you edit the table colors or &ldquo;Where to look&rdquo; texts, your changes are saved in your own browser automatically.',
     h_ops: '• Actions before NewGame', th_op: 'Action', th_cnt: 'Times', th_rng: 'RNG calls',
     op_boot: 'Launch &rarr; first title screen (17324)', fixed1: '1 (fixed)',
     op_ld: 'Load a save (including quick load)<br>Choose &ldquo;Return to Title&rdquo; in another save<br>Lose a battle and see the retry screen',
@@ -2140,8 +2140,15 @@ function tpSeedIsTop_(opts, c) {
 
   // URL の # に入力を残す(リンクで同じ条件を渡せるように)。形式: #op=2,12:22,0:0,0:0,1,0,2&n0=43531&g=4A,4A,3A,1A,1A&sk=1
   //   op = ロード等の回数, 往復(場所の番号:半往復の数)×3, 宝箱等, リザルトセリフ, NewGame の回数 / n0 = 直接入力(無ければ操作から)/ g = 画面の素材の順に 目標数＋A/B/C / sk=1 = 分解・カットする装備のスキルも表示
-  function readHash() {
-    var p = {}; location.hash.replace(/^#/, '').split('&').forEach(function (kv) { var a = kv.split('='); if (a[0]) p[a[0]] = decodeURIComponent(a[1] || ''); });
+  // 入力(①②の表・n0・チェックボックス・言語)はこのブラウザにも覚える(localStorage tpInputs = # と同じ形式。2026-10-26 ユーザー指定)。
+  // 開いたとき # があれば # を使い(リンクで渡された条件)、無ければ覚えた入力を使う
+  function inputsStr() {
+    return '#op=' + opsHash() + ($('n0').value.trim() ? '&n0=' + $('n0').value.trim() : '') + '&g=' + goals().map(function (x) { return x[1] + x[2]; }).join(',') + ($('skopt').checked ? '&sk=1' : '') + (isEn() ? '&lang=en' : '');
+  }
+  var inputsReady = false;   // 読み込み中(readHash の前)は保存しない
+  function saveInputs() { if (inputsReady) try { localStorage.setItem('tpInputs', inputsStr()); } catch (e) {} }
+  function readHash(h) {
+    var p = {}; (h || location.hash).replace(/^#/, '').split('&').forEach(function (kv) { var a = kv.split('='); if (a[0]) p[a[0]] = decodeURIComponent(a[1] || ''); });
     $('lang').checked = p.lang ? p.lang === 'en' : !/^ja/i.test(navigator.language || 'ja');   // 言語: # の lang、無ければブラウザの言語(日本語以外なら英語)
     if (!p.op) p = {};   // 古い形式の #(このページの初期の版)は読まない → 既定(GS61428)のまま
     $('n0').value = /^\d+$/.test(p.n0 || '') ? p.n0 : '';
@@ -2165,8 +2172,11 @@ function tpSeedIsTop_(opts, c) {
     if (v === '') return auto;
     return /^\d+$/.test(v) ? Number(v) : NaN;
   }
-  function showGs() { var v = n0(); $('n0use').textContent = isNaN(v) ? '-' : v; $('gsv').textContent = isNaN(v) ? '-' : L.tpVal_(L.tpJump_(v + 2), 65536); }
-  readHash(); relabel(); showGs();
+  function showGs() { saveInputs(); var v = n0(); $('n0use').textContent = isNaN(v) ? '-' : v; $('gsv').textContent = isNaN(v) ? '-' : L.tpVal_(L.tpJump_(v + 2), 65536); }
+  (function () { var h = location.hash.length > 1 ? '' : null; if (h === null) try { h = localStorage.getItem('tpInputs') || ''; } catch (e) { h = ''; } readHash(h); })();
+  inputsReady = true; relabel(); showGs();
+  tb.addEventListener('change', saveInputs); tb.addEventListener('input', saveInputs);
+  $('skopt').addEventListener('change', saveInputs); $('lang').addEventListener('change', saveInputs);
   $('n0').addEventListener('input', showGs);
   document.querySelectorAll('table.ops select').forEach(function (e) { e.addEventListener('change', showGs); });
 
