@@ -11,7 +11,7 @@
 :root{color-scheme:dark;--bg:#0b0c0f;--fg:#ececec;--mut:#a9aeb8;--ln:#3a3f4a;--hd:#1f3864;--hdfg:#efefef;--pn:#15181d;--ac:#2f5597;--warn:#ff5555}
 /* 元シート ☆本体☆ の色を黒地向けに(2026-10-20 ユーザー指定): 見出し #1f3864 / NewGame 前の入力 オレンジ(暗め) / 目標の入力 黄(暗め) / 固定 灰 / 結果 緑 /
    ※1 青 / ※2 赤 / ※3 紫(シートの #9900ff より明るく)/ 黒銀の紫はシートと同じ #9900ff。入力欄の背景はシートの色にしない(通常の色) */
-.blue{color:#6e9bff}.wb{color:#fff;font-weight:bold}.red{color:#ff5a5a}.pur{color:#c48cff}
+.blue{color:#6e9bff}.wb{font-weight:bold}.red{color:#ff5a5a}.pur{color:#c48cff}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 "Meiryo","Yu Gothic UI","Hiragino Sans",sans-serif}
 header{padding:12px 16px 4px}
@@ -97,7 +97,7 @@ label.memo-chk{font-size:12px}   /* 本走メモの枠の左上(元の GS の行
 label.memo-chk input{width:13px;height:13px;margin:0}
 .gsline{font-size:26px;color:#c4c8d0;position:relative;left:8px;top:4px}.gsline b{color:#fff}   /* GS の行(色は本走メモの h1 と同じ。2026-10-21 ユーザー指定で 13px の2倍・少し右下へ) */
 .actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
-.memobar{margin-bottom:4px;position:relative}   /* GS の行(右下に保存先の説明 .savenote を重ねる) */
+.memobar{margin-bottom:-4px;position:relative}   /* GS の行(右下に保存先の説明 .savenote を重ねる) */
 .memotop{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:6px 0 0 6px}   /* 本走メモの枠の上: チェックボックスの右に ③④ PNG 保存(2026-10-22 ユーザー指定で表の少し上へ)。④ の右端を拾得計画の表の右端にそろえる(幅は fitMemo が決める) */
 .memotop .pngs{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
 .savenote{font-size:12px;color:var(--mut);position:absolute;bottom:0;white-space:nowrap}   /* GS の行の下側と同じ高さ・本走メモの枠の少し上。左端を「表の背景色設定」ボタンにそろえる(left は placeNote が決める。2026-10-26 ユーザー指定) */
@@ -158,7 +158,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <tr><td class="op pur" data-i18n="op_rs">リザルトセリフ抽選を受ける(利用非推奨 ※3)</td><td class="cnt"><select id="rs" class="in-g"></select></td><td class="num" id="c_rs"></td></tr>
 <tr><td class="op" data-i18n="op_ng"><span class="red">NewGame 選択の瞬間(※2)</span>(8662)</td><td class="cnt"><select id="ng" class="in-o"></select></td><td class="num" id="c_ng"></td></tr>
 <tr><td class="op" data-i18n="op_auto">n0(= 上記の合計 − 最後の NewGame の 8662)</td><td colspan="2" class="num fix" id="n0auto" style="text-align:center"></td></tr>
-<tr><td class="op" data-i18n="op_n0">n0 を直接入力 (<b class="wb">※入れるとこちらを優先して使用</b>)</td><td colspan="2" class="num"><input id="n0" class="in-o" type="number" min="0" step="1" placeholder="空欄"></td></tr>
+<tr><td class="op" data-i18n="op_n0">n0 を直接入力 (<b class="wb">※入れるとこちらを優先して使用※</b>)</td><td colspan="2" class="num"><input id="n0" class="in-o" type="number" min="0" step="1" placeholder="空欄"></td></tr>
 <tr><td class="op res" data-i18n="op_use"><b>使う n0 / GlobalSeed</b></td><td colspan="2" class="num res"><b id="n0use">-</b> / <b id="gsv">-</b></td></tr>
 </tbody>
 </table>
@@ -1935,7 +1935,7 @@ function tpSeedIsTop_(opts, c) {
     op_rs: 'Get a result-line roll (not recommended ※3)',
     op_ng: '<span class="red">Moment you select NewGame (※2)</span> (8662)',
     op_auto: 'n0 (= total above &minus; 8662 for the last NewGame)',
-    op_n0: 'Enter n0 directly (<b class="wb">* overrides the table above</b>)',
+    op_n0: 'Enter n0 directly (<b class="wb">* overrides the table above *</b>)',
     op_use: '<b>n0 used / GlobalSeed</b>',
     fn1: '<b class="blue">※1</b>: Load a save point near a location change and adjust by going back and forth between maps.',
     fn2: '<b class="red">※2</b>: Back out of the Grade Shop to the title without doing anything and select NewGame again for another +8662, as many times as you like.',
