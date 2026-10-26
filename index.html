@@ -11,7 +11,7 @@
 :root{color-scheme:dark;--bg:#0b0c0f;--fg:#ececec;--mut:#a9aeb8;--ln:#3a3f4a;--hd:#1f3864;--hdfg:#efefef;--pn:#15181d;--ac:#2f5597;--warn:#ff5555}
 /* 元シート ☆本体☆ の色を黒地向けに(2026-10-20 ユーザー指定): 見出し #1f3864 / NewGame 前の入力 オレンジ(暗め) / 目標の入力 黄(暗め) / 固定 灰 / 結果 緑 /
    ※1 青 / ※2 赤 / ※3 紫(シートの #9900ff より明るく)/ 黒銀の紫はシートと同じ #9900ff。入力欄の背景はシートの色にしない(通常の色) */
-.blue{color:#6e9bff}.wb{font-weight:bold}.red{color:#ff5a5a}.pur{color:#c48cff}
+.blue{color:#6e9bff}.wb{font-weight:bold;color:var(--mut)}.red{color:#ff5a5a}.pur{color:#c48cff}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 "Meiryo","Yu Gothic UI","Hiragino Sans",sans-serif}
 header{padding:12px 16px 4px}
@@ -97,7 +97,7 @@ label.memo-chk{font-size:12px}   /* 本走メモの枠の左上(元の GS の行
 label.memo-chk input{width:13px;height:13px;margin:0}
 .gsline{font-size:26px;color:#c4c8d0;position:relative;left:8px;top:4px}.gsline b{color:#fff}   /* GS の行(色は本走メモの h1 と同じ。2026-10-21 ユーザー指定で 13px の2倍・少し右下へ) */
 .actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
-.memobar{margin-bottom:-4px;position:relative}   /* GS の行(右下に保存先の説明 .savenote を重ねる) */
+.memobar{margin-bottom:-8px;position:relative}   /* GS の行(右下に保存先の説明 .savenote を重ねる) */
 .memotop{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:6px 0 0 6px}   /* 本走メモの枠の上: チェックボックスの右に ③④ PNG 保存(2026-10-22 ユーザー指定で表の少し上へ)。④ の右端を拾得計画の表の右端にそろえる(幅は fitMemo が決める) */
 .memotop .pngs{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
 .savenote{font-size:12px;color:var(--mut);position:absolute;bottom:0;white-space:nowrap}   /* GS の行の下側と同じ高さ・本走メモの枠の少し上。左端を「表の背景色設定」ボタンにそろえる(left は placeNote が決める。2026-10-26 ユーザー指定) */
