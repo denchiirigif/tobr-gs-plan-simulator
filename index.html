@@ -103,9 +103,11 @@ label.memo-chk input{width:13px;height:13px;margin:0}
 button.green{background:#3c7a3a;border-color:#3c7a3a;color:#fff;font-weight:bold}   /* 「列の背景色」(2026-10-26 ユーザー指定で緑) */
 dialog#bgdlg{background:#18241b;color:var(--fg);border:1px solid var(--ln);border-radius:8px;padding:14px 16px;font-size:13px;min-width:22em}   /* 列の背景色のポップアップ(2026-10-26。本体 = 黒に近い淡い緑、見出しの帯 = ボタンと同じ緑) */
 dialog#bgdlg::backdrop{background:transparent}   /* 開いても画面を暗くしない(2026-10-26 ユーザー指定) */
-dialog#bgdlg{margin:0;position:fixed;top:80px;left:40px}   /* 位置は JS が決める(上の方。ドラッグで動かせ、最後の位置を覚える) */
+dialog#bgdlg{margin:0;position:fixed;top:80px;left:40px;resize:both;overflow:auto;min-width:320px;min-height:160px;max-width:100vw;max-height:100vh;box-sizing:border-box}   /* 右下の角で大きさを変えられる(2026-10-26) */
+#bg_list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:4px 18px}   /* 一覧。ポップアップを広げると複数列に並ぶ */
+.bgrow{display:flex;align-items:center;gap:8px}.bgrow .nm{flex:1;white-space:nowrap}.bgrow .sw{width:46px;height:24px;padding:0;border:1px solid #9aa;border-radius:4px;cursor:pointer}.bgrow .rs{font-size:12px;padding:2px 8px}
+#bg_list #bg_pk{grid-column:1/-1;margin:2px 0 6px}   /* 位置は JS が決める(上の方。ドラッグで動かせ、最後の位置を覚える) */
 #bgdlg h3{margin:-14px -16px 10px;padding:10px 16px 8px;font-size:14px;cursor:move;user-select:none;background:#3c7a3a;color:#fff;border-radius:7px 7px 0 0}   /* 見出し = つかんで動かす所 */#bgdlg .r{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}#bgdlg [hidden]{display:none!important}
-#bg_sw{width:46px;height:26px;padding:0;border:1px solid #9aa;border-radius:4px;cursor:pointer}   /* 色の見本 = 押すとカラーピッカー */
 #bg_pk{border:1px solid var(--ln);border-radius:6px;padding:10px;background:#101812;width:max-content}
 #pk_sv{position:relative;width:240px;height:150px;border-radius:3px;cursor:crosshair;touch-action:none}
 #pk_sv::before{content:"";position:absolute;inset:0;border-radius:3px;background:linear-gradient(to right,#fff,rgba(255,255,255,0))}
@@ -188,11 +190,11 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </div>
 <div class="memo-wrap"><div class="memotop" id="memotop"><label class="chk memo-chk"><input type="checkbox" id="skopt"> <span data-i18n="skopt">分解する装備 / 素材潤沢ならカットする装備 のランダムスキルも表示する。</span></label>
 <span class="pngs">
-<button id="bgbtn" class="green" disabled data-i18n="b_bg">列の背景色</button>
+<button id="bgbtn" class="green" disabled data-i18n="b_bg">表の背景色設定</button>
 <button id="png_plan" class="primary" disabled data-i18n="b_png_plan">pngで保存 (拾得計画表のみ)</button>
 <button id="png_all" disabled data-i18n="b_png_all">pngで保存 (拾得計画表 / ランダムスキル表 / リザルトセリフ表 全て)</button>
 </span></div>
-<dialog id="bgdlg"><h3 data-i18n="bg_title">列の背景色</h3><div id="bg_main"><div class="r"><span data-i18n="bg_area">ダンジョン</span><select id="bg_area"></select><button id="bg_sw" title="色を選ぶ"></button><button id="bg_close" data-i18n="bg_close">閉じる</button></div><div id="bg_pk" hidden><div id="pk_sv"><i class="kn" id="pk_svk"></i></div><div id="pk_h"><i class="kn" id="pk_hk"></i></div><div class="r"><input id="pk_hex" maxlength="7" spellcheck="false"><span id="pk_pv"></span><button id="bg_ok" class="primary" data-i18n="bg_ok">決定</button></div></div><div class="r"><button id="bg_clear" data-i18n="bg_clear">このダンジョンを初期の色に戻す</button><button id="bg_clearall" data-i18n="bg_clearall">すべて初期の色に戻す</button></div></div><div id="bg_ask" hidden><div class="r" data-i18n="bg_ask">すべてのダンジョンを初期の色に戻しますか？</div><div class="r"><button id="bg_yes" class="primary" data-i18n="bg_yes">戻す</button><button id="bg_no" data-i18n="bg_no">やめる</button></div></div></dialog>
+<dialog id="bgdlg"><h3 data-i18n="bg_title">表の背景色設定</h3><div id="bg_main"><div id="bg_list"></div><div id="bg_pk" hidden><div id="pk_sv"><i class="kn" id="pk_svk"></i></div><div id="pk_h"><i class="kn" id="pk_hk"></i></div><div class="r"><input id="pk_hex" maxlength="7" spellcheck="false"><span id="pk_pv"></span><button id="bg_ok" class="primary" data-i18n="bg_ok">決定</button></div></div><div class="r end"><button id="bg_clearall" data-i18n="bg_clearall">すべて初期の色に戻す</button><button id="bg_close" data-i18n="bg_close">閉じる</button></div></div><div id="bg_ask" hidden><div class="r" data-i18n="bg_ask">すべてのダンジョンを初期の色に戻しますか？</div><div class="r"><button id="bg_yes" class="primary" data-i18n="bg_yes">戻す</button><button id="bg_no" data-i18n="bg_no">やめる</button></div></div></dialog>
 <iframe id="memo" title="本走メモ" scrolling="no"></iframe></div>
 <iframe id="pngbox" title="PNG" scrolling="no" aria-hidden="true" tabindex="-1"></iframe>
 <section class="notes">
@@ -1256,7 +1258,7 @@ function tpSeedIsTop_(opts, c) {
   'use strict';
   var LOGIC = document.getElementById('logic').textContent;
   // 計算ロジック(コード.js)をこのページのスコープでも1回だけ読む(GlobalSeed の表示・Worker が使えないときの計算用)
-  var L = new Function(LOGIC + '\n;return {tpJump_:tpJump_,tpVal_:tpVal_,tpMemoPlan_:tpMemoPlan_,tpMemoHtml_:tpMemoHtml_,tpMemoSkills_:tpMemoSkills_,TP_MEMO_BATTLE:TP_MEMO_BATTLE,tpSeedSearch_:tpSeedSearch_,tpSeedCount_:tpSeedCount_,tpSeedOptions_:tpSeedOptions_,tpSeedIsTop_:tpSeedIsTop_,tpSkillCode_:tpSkillCode_,tpSkillColor_:tpSkillColor_,tpMemoLine_:tpMemoLine_,TP_SKILL_ROWS:TP_SKILL_ROWS,TP_SKILL_NAMES:TP_SKILL_NAMES,TP_SKILL_PLACE_EN:TP_SKILL_PLACE_EN,TP_SKILL_SUFFIX_EN:TP_SKILL_SUFFIX_EN};')();
+  var L = new Function(LOGIC + '\n;return {tpJump_:tpJump_,tpVal_:tpVal_,tpMemoPlan_:tpMemoPlan_,tpMemoHtml_:tpMemoHtml_,tpMemoSkills_:tpMemoSkills_,TP_MEMO_BATTLE:TP_MEMO_BATTLE,tpSeedSearch_:tpSeedSearch_,tpSeedCount_:tpSeedCount_,tpSeedOptions_:tpSeedOptions_,tpSeedIsTop_:tpSeedIsTop_,tpSkillCode_:tpSkillCode_,tpSkillColor_:tpSkillColor_,tpMemoLine_:tpMemoLine_,TP_DATA:TP_DATA,TP_SKILL_ROWS:TP_SKILL_ROWS,TP_SKILL_NAMES:TP_SKILL_NAMES,TP_SKILL_PLACE_EN:TP_SKILL_PLACE_EN,TP_SKILL_SUFFIX_EN:TP_SKILL_SUFFIX_EN};')();
   // 素材の並び・既定の目標(2026-10-20 ユーザー指定: 青銅4・琥珀4・錬成粉3・黒銀1・方解石1、許容コストはすべて A)
   var ITEMS = [['青銅の塊', '青銅の塊', 4, 'A', '#6e9bff'], ['琥珀の欠片', '琥珀の欠片', 4, 'A', '#ff9900'], ['下級の錬成粉', '下級の錬成粉', 3, 'A', '#980000'],
     ['黒銀の塊', '黒銀の塊', 1, 'A', '#9900ff'], ['方解石の欠片', '方解石の欠片', 1, 'A', '#6aa84f']];   // 5番目 = 素材名の色(元シート ☆本体☆ L17:L21。青銅 #0000ff・方解石 #274e13 は黒地用に明るく)
@@ -1936,7 +1938,7 @@ function tpSeedIsTop_(opts, c) {
     h_goals: '• Treasure point material pickup targets', th_mat: 'Material', th_cap: 'Target count', th_cost: 'Max detour cost',
     h_bt: '• Extra RNG rolls from result lines',
     bt_lead: 'In the two battles below in Titania, the result-line roll adds an uncertain number of RNG calls.<br>&ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; / &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo;',
-    b_run: '&darr;Build plan&darr;', b_png_plan: 'Save PNG (pickup plan table only)', b_bg: 'Row colors', bg_title: 'Row colors', bg_area: 'Dungeon', bg_ok: 'Apply', bg_clear: 'Reset this dungeon', bg_clearall: 'Reset all', bg_ask: 'Reset every dungeon to its default color?', bg_yes: 'Reset', bg_no: 'Cancel', bg_close: 'Close', b_png_all: 'Save PNG (pickup plan / random skills / result lines tables, all)', b_reset: '&uarr;Reset to defaults&uarr;',
+    b_run: '&darr;Build plan&darr;', b_png_plan: 'Save PNG (pickup plan table only)', b_bg: 'Table colors', bg_title: 'Table colors', bg_area: 'Dungeon', bg_ok: 'Apply', bg_clear: 'Reset this dungeon', bg_clearall: 'Reset all', bg_ask: 'Reset every dungeon to its default color?', bg_yes: 'Reset', bg_no: 'Cancel', bg_close: 'Close', b_png_all: 'Save PNG (pickup plan / random skills / result lines tables, all)', b_reset: '&uarr;Reset to defaults&uarr;',
     skopt: 'Also show the random skills of gear you dismantle / cut when materials are plentiful.',
     n1: '+0 to +5 columns: Extra RNG Rolls (= how many more RNG calls than planned happened between NewGame and Burnack Plateau.)<br>= the sum of<ul><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; (+0~2)</li><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo; (+0~2)</li><li>Pickups (adjusting by picking up treasure points, Fire Ring, etc.) (+1)</li></ul>',
     stamp: 'Plan logic: コード.js generated 2026-10-21 (sha256 cde992b00331) / page built 2026-10-26',
@@ -2198,23 +2200,32 @@ function tpSeedIsTop_(opts, c) {
   Object.keys(ROWBG).forEach(function (a) { if (ROWBG[a] === ROWBG_DEF[a]) delete ROWBG[a]; });   // 初期の色と同じものは変更なし扱い
   function saveBg() { try { localStorage.setItem('tpRowBg', JSON.stringify(ROWBG)); } catch (e) {} }
   function rowBgMap() { return Object.assign({}, ROWBG_DEF, ROWBG); }
-  function bgAreas() {   // 今の表のダンジョン(ルート順)
-    var d = $('memo').contentDocument, seen = [];
-    if (d) d.querySelectorAll('tr[data-a]').forEach(function (tr) { if (seen.indexOf(tr.dataset.a) < 0) seen.push(tr.dataset.a); });
+  function bgAreas() {   // 全ダンジョン(ルート順): 台本でトレジャーポイントを抽選するグループの地名と、宝箱を開ける位置の地名(本走メモの宝箱の行と同じ名前)
+    var D = L.TP_DATA, seen = [], CH = { 5: 'ヴェスター坑道', 6: 'ゼクソン港', 7: 'カドニクス港', 8: 'レニードの街' };
+    function add(a) { if (a && seen.indexOf(a) < 0) seen.push(a); }
+    D.ops.forEach(function (o) { if (o[0] === 0 && D.cands[o[1]]) D.cands[o[1]].forEach(function (p) { add(p.s[0]); }); else if (CH[o[0]]) add(CH[o[0]]); });
+    Object.keys(rowBgMap()).forEach(add);
     return seen;
   }
   function rgbHex(c) { var m = String(c).match(/[\d.]+/g); if (!m || (m.length > 3 && Number(m[3]) === 0)) return '#08090b'; return '#' + m.slice(0, 3).map(function (x) { return ('0' + Number(x).toString(16)).slice(-2); }).join(''); }
-  function bgLabel(a) { return escH(isEn() ? (TP_EN.areas && TP_EN.areas[a]) || a : a.replace(/^海門要塞 /, '')) + (ROWBG[a] ? ' ●' : ''); }   // ● = 初期の色から変えたダンジョン
-  function bgFill() {   // ダンジョンのプルダウンを今の表から作り直す
-    var sel = $('bg_area'), keep = sel.value, as = bgAreas();
-    sel.innerHTML = as.map(function (a) { return '<option value="' + escH(a) + '">' + bgLabel(a) + '</option>'; }).join('');
-    if (as.indexOf(keep) >= 0) sel.value = keep;
-    bgPick();
+  function bgName(a) { return escH(isEn() ? (TP_EN.areas && TP_EN.areas[a]) || a : a.replace(/^海門要塞 /, '')); }
+  function bgColorOf(a) {   // 今の色(色が無いダンジョンは表の帯の色、表に出ていなければ黒)
+    var c = rowBgMap()[a]; if (c) return c;
+    var d = $('memo').contentDocument, td = d ? d.querySelector('tr[data-a="' + CSS.escape(a) + '"] td') : null;
+    return td ? rgbHex(getComputedStyle(td).backgroundColor) : '#08090b';
   }
-  var bgCur = '#08090b';   // 選んでいるダンジョンの保存済みの色
-  function bgPick() {   // 選んだダンジョンの今の色をカラーピッカーに出す(決定していない色は捨てる)
-    var a = $('bg_area').value, c = rowBgMap()[a], d = $('memo').contentDocument, td = !c && a && d ? d.querySelector('tr[data-a="' + CSS.escape(a) + '"] td') : null;
-    bgCur = c || (td ? rgbHex(getComputedStyle(td).backgroundColor) : '#08090b'); $('bg_sw').style.background = bgCur;
+  function bgRowEl(a) { return $('bg_list').querySelector('.bgrow[data-a="' + CSS.escape(a) + '"]'); }
+  function bgRowUpd(a) {   // 一覧の1行(名前の ● = 初期の色から変えた、色の見本)を今の状態に
+    var r = bgRowEl(a); if (!r) return;
+    r.querySelector('.nm').innerHTML = bgName(a) + (ROWBG[a] ? ' ●' : '');
+    r.querySelector('.sw').style.background = bgColorOf(a);
+  }
+  function bgFill() {   // 一覧を作り直す: 「ダンジョン名 : 色の見本(押すとピッカー) : 初期の色に戻す」
+    $('bg_pk').hidden = true; $('bg_main').appendChild($('bg_pk'));
+    $('bg_list').innerHTML = bgAreas().map(function (a) {
+      return '<div class="bgrow" data-a="' + escH(a) + '"><span class="nm"></span><button class="sw" title="' + escH(T('色を選ぶ', 'Pick a color')) + '"></button><button class="rs">' + escH(T('初期の色に戻す', 'Reset')) + '</button></div>';
+    }).join('');
+    bgAreas().forEach(bgRowUpd);
   }
   function bgApply(a) {   // 表示中の表のそのダンジョンの行を塗り替える
     var d = $('memo').contentDocument, c = rowBgMap()[a]; if (!d) return;
@@ -2222,32 +2233,39 @@ function tpSeedIsTop_(opts, c) {
       if (c) { tr.classList.add('cb'); tr.style.setProperty('--rb', c); tr.style.setProperty('--rl', L.tpMemoLine_(c)); } else { tr.classList.remove('cb'); tr.style.removeProperty('--rb'); tr.style.removeProperty('--rl'); }
     });
   }
-  function bgMark() { var o = $('bg_area').selectedOptions[0]; if (o) o.innerHTML = bgLabel(o.value); }
   function bgConfirm(show) { $('bg_ask').hidden = !show; $('bg_main').hidden = show; }
-  // ポップアップの位置(2026-10-26 ユーザー指定): 初めは画面の上の方・左右の中央。見出しをつかんでドラッグで動かせ、最後の位置をこのブラウザに覚える(localStorage tpBgDlgPos)
+  // ポップアップの位置と大きさ(2026-10-26 ユーザー指定): 初めは画面の上の方・左右の中央。見出しをつかんでドラッグで動かせ、右下の角で大きさを変えられる。
+  // 閉じたときの位置と大きさをこのブラウザに覚える(localStorage tpBgDlgPos = [x, y, 幅, 高さ])
   function bgPlace(x, y) {   // 画面からはみ出さないように置く
     var dl = $('bgdlg'), w = dl.offsetWidth, h = dl.offsetHeight;
     x = Math.max(0, Math.min(x, innerWidth - w)); y = Math.max(0, Math.min(y, innerHeight - h));
     dl.style.left = x + 'px'; dl.style.top = y + 'px';
   }
+  function bgSavePos() {
+    var r = $('bgdlg').getBoundingClientRect(); if (!r.width) return;
+    try { localStorage.setItem('tpBgDlgPos', JSON.stringify([Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)])); } catch (e) {}
+  }
   $('bgbtn').addEventListener('click', function () {
-    bgConfirm(false); bgFill(); $('bgdlg').showModal();
+    bgConfirm(false); bgFill();
     var pos = null; try { pos = JSON.parse(localStorage.getItem('tpBgDlgPos') || 'null'); } catch (e) { pos = null; }
-    if (pos) bgPlace(pos[0], pos[1]); else bgPlace((innerWidth - $('bgdlg').offsetWidth) / 2, 80);
+    var dl = $('bgdlg');
+    if (pos && pos[2]) { dl.style.width = Math.min(pos[2], innerWidth) + 'px'; dl.style.height = Math.min(pos[3], innerHeight) + 'px'; }
+    dl.showModal();
+    if (pos) bgPlace(pos[0], pos[1]); else bgPlace((innerWidth - dl.offsetWidth) / 2, 80);
   });
   (function () {   // 見出しのドラッグ
     var h = $('bgdlg').querySelector('h3'), dx = 0, dy = 0, on = false;
     h.addEventListener('pointerdown', function (e) { var r = $('bgdlg').getBoundingClientRect(); on = true; dx = e.clientX - r.left; dy = e.clientY - r.top; h.setPointerCapture(e.pointerId); e.preventDefault(); });
     h.addEventListener('pointermove', function (e) { if (on) bgPlace(e.clientX - dx, e.clientY - dy); });
-    h.addEventListener('pointerup', function () {
-      if (!on) return; on = false;
-      var r = $('bgdlg').getBoundingClientRect(); try { localStorage.setItem('tpBgDlgPos', JSON.stringify([Math.round(r.left), Math.round(r.top)])); } catch (e) {}
-    });
+    h.addEventListener('pointerup', function () { if (on) { on = false; bgSavePos(); } });
   })();
-  $('bgdlg').addEventListener('click', function (e) {   // ポップアップの外を押したら閉じる(モーダルの外側のクリックは dialog 自身に届く。枠の内側の余白と区別するため座標で判定)
-    var r = $('bgdlg').getBoundingClientRect();
-    if (e.target === $('bgdlg') && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) $('bgdlg').close();
-  });
+  // ポップアップの外を押したら閉じる(モーダルの外側のクリックは dialog 自身に届く。枠の内側の余白と区別するため座標で判定)。
+  // 押し始めも外のときだけ(角をドラッグして大きさを変え、外で離したときに閉じないように)
+  function bgOutside(e) { var r = $('bgdlg').getBoundingClientRect(); return e.target === $('bgdlg') && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom); }
+  var bgDownOut = false;
+  $('bgdlg').addEventListener('pointerdown', function (e) { bgDownOut = bgOutside(e); });
+  $('bgdlg').addEventListener('click', function (e) { if (bgDownOut && bgOutside(e)) $('bgdlg').close(); bgDownOut = false; });
+  if (window.ResizeObserver) new ResizeObserver(function () { if ($('bgdlg').open) bgSavePos(); }).observe($('bgdlg'));   // 大きさを変えたら覚える(閉じた後では測れないため)
   var bgTry = null;   // 仮に塗っているダンジョン
   function bgPreview(a, c) {
     var d = $('memo').contentDocument; if (!d) return;
@@ -2256,8 +2274,8 @@ function tpSeedIsTop_(opts, c) {
   }
   function bgRevert() { if (bgTry !== null) { bgApply(bgTry); bgTry = null; } }   // 保存してある色に戻す
   // カラーピッカー(2026-10-26 ユーザー指定で自前に。ブラウザのピッカーには「決定」を付けられないため): 色の四角(彩度×明るさ)・色相の帯・#RRGGBB の欄・「決定」。
-  // 動かしている間は表に仮に塗る。「決定」で保存。ピッカーの外を押す・ダンジョンを選び直す・ポップアップを閉じる → 決定していない色は捨てて元の色に戻す
-  var PK = { h: 0, s: 0, v: 0 };
+  // 一覧の色の見本を押すと、その行のすぐ下に開く。動かしている間は表に仮に塗る。「決定」で保存。ピッカーの外を押す・ポップアップを閉じる → 決定していない色は捨てて元の色に戻す
+  var PK = { h: 0, s: 0, v: 0 }, pkArea = null;
   function hexRgb(x) { var m = /^#?([0-9a-f]{6})$/i.exec(String(x).trim()); if (!m) return null; var n = parseInt(m[1], 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
   function rgbHex2(r) { return '#' + r.map(function (x) { return ('0' + Math.round(x).toString(16)).slice(-2); }).join(''); }
   function rgbHsv(c) { var r = c[0] / 255, g = c[1] / 255, b = c[2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, h = 0;
@@ -2273,9 +2291,9 @@ function tpSeedIsTop_(opts, c) {
     var hx = pkHex(); $('pk_pv').style.background = hx; if (!keepHex) $('pk_hex').value = hx;
   }
   function pkSet(hex) { var c = hexRgb(hex); if (c) { PK = rgbHsv(c); pkDraw(); } }
-  function pkLive() { var a = $('bg_area').value; if (a) bgPreview(a, pkHex()); }
-  function pkOpen() { pkSet(bgCur); $('bg_pk').hidden = false; }
-  function pkCancel() { if (!$('bg_pk').hidden) { $('bg_pk').hidden = true; bgRevert(); } }
+  function pkLive() { if (pkArea !== null) bgPreview(pkArea, pkHex()); }
+  function pkOpen(a) { pkArea = a; bgRowEl(a).after($('bg_pk')); pkSet(bgColorOf(a)); $('bg_pk').hidden = false; }
+  function pkCancel() { if (!$('bg_pk').hidden) { $('bg_pk').hidden = true; pkArea = null; bgRevert(); } }
   function pkDrag(el, fn) {   // 四角・帯の上でつかんで動かす
     el.addEventListener('pointerdown', function (e) { el.setPointerCapture(e.pointerId); fn(e); e.preventDefault(); });
     el.addEventListener('pointermove', function (e) { if (el.hasPointerCapture(e.pointerId)) fn(e); });
@@ -2283,20 +2301,26 @@ function tpSeedIsTop_(opts, c) {
   pkDrag($('pk_sv'), function (e) { var r = $('pk_sv').getBoundingClientRect(); PK.s = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)); PK.v = Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height)); pkDraw(); pkLive(); });
   pkDrag($('pk_h'), function (e) { var r = $('pk_h').getBoundingClientRect(); PK.h = Math.max(0, Math.min(359.9, (e.clientX - r.left) / r.width * 360)); pkDraw(); pkLive(); });
   $('pk_hex').addEventListener('input', function () { var c = hexRgb($('pk_hex').value); if (c) { PK = rgbHsv(c); pkDraw(true); pkLive(); } });
-  $('bg_sw').addEventListener('click', function () { if ($('bg_pk').hidden) pkOpen(); else pkCancel(); });
-  document.addEventListener('pointerdown', function (e) {   // ピッカーの外を押したら、決定せずに閉じる
-    if (!$('bg_pk').hidden && !$('bg_pk').contains(e.target) && e.target !== $('bg_sw')) pkCancel();
+  $('bg_list').addEventListener('click', function (e) {   // 一覧の行のボタン(色の見本 = ピッカーを開く/閉じる、初期の色に戻す)
+    var row = e.target.closest('.bgrow'); if (!row) return;
+    var a = row.dataset.a;
+    if (e.target.classList.contains('sw')) { var same = pkArea === a && !$('bg_pk').hidden; pkCancel(); if (!same) pkOpen(a); }
+    else if (e.target.classList.contains('rs')) { pkCancel(); delete ROWBG[a]; saveBg(); bgApply(a); bgRowUpd(a); }
+  });
+  document.addEventListener('pointerdown', function (e) {   // ピッカーの外を押したら、決定せずに閉じる(開いている行の色の見本は上の click で閉じる)
+    if ($('bg_pk').hidden || $('bg_pk').contains(e.target)) return;
+    var row = e.target.closest && e.target.closest('.bgrow');
+    if (row && row.dataset.a === pkArea && e.target.classList.contains('sw')) return;
+    pkCancel();
   }, true);
-  $('bgdlg').addEventListener('close', function () { $('bg_pk').hidden = true; bgRevert(); bgConfirm(false); });
-  $('bg_area').addEventListener('change', function () { pkCancel(); bgRevert(); bgPick(); });
+  $('bgdlg').addEventListener('close', function () { bgSavePos(); $('bg_pk').hidden = true; pkArea = null; bgRevert(); bgConfirm(false); });
   $('bg_ok').addEventListener('click', function () {   // 決定
-    var a = $('bg_area').value; if (!a) return;
+    var a = pkArea; if (a === null) return;
     var c = pkHex();
     if (c === ROWBG_DEF[a]) delete ROWBG[a]; else ROWBG[a] = c;
-    saveBg(); bgTry = null; bgApply(a); bgMark(); bgPick(); $('bg_pk').hidden = true;
+    saveBg(); bgTry = null; bgApply(a); $('bg_pk').hidden = true; pkArea = null; bgRowUpd(a);
   });
-  $('bg_clear').addEventListener('click', function () { var a = $('bg_area').value; if (!a) return; delete ROWBG[a]; saveBg(); $('bg_pk').hidden = true; bgTry = null; bgApply(a); bgMark(); bgPick(); });
-  $('bg_clearall').addEventListener('click', function () { bgConfirm(true); });
+  $('bg_clearall').addEventListener('click', function () { pkCancel(); bgConfirm(true); });
   $('bg_yes').addEventListener('click', function () { var as = Object.keys(ROWBG); ROWBG = {}; saveBg(); bgRevert(); as.forEach(bgApply); bgFill(); bgConfirm(false); });
   $('bg_no').addEventListener('click', function () { bgConfirm(false); });
   $('bg_close').addEventListener('click', function () { $('bgdlg').close(); });
