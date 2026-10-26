@@ -11,7 +11,7 @@
 :root{color-scheme:dark;--bg:#0b0c0f;--fg:#ececec;--mut:#a9aeb8;--ln:#3a3f4a;--hd:#1f3864;--hdfg:#efefef;--pn:#15181d;--ac:#2f5597;--warn:#ff5555}
 /* 元シート ☆本体☆ の色を黒地向けに(2026-10-20 ユーザー指定): 見出し #1f3864 / NewGame 前の入力 オレンジ(暗め) / 目標の入力 黄(暗め) / 固定 灰 / 結果 緑 /
    ※1 青 / ※2 赤 / ※3 紫(シートの #9900ff より明るく)/ 黒銀の紫はシートと同じ #9900ff。入力欄の背景はシートの色にしない(通常の色) */
-.blue{color:#6e9bff}.red{color:#ff5a5a}.pur{color:#c48cff}
+.blue{color:#6e9bff}.wb{color:#fff;font-weight:bold}.red{color:#ff5a5a}.pur{color:#c48cff}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 "Meiryo","Yu Gothic UI","Hiragino Sans",sans-serif}
 header{padding:12px 16px 4px}
@@ -97,10 +97,10 @@ label.memo-chk{font-size:12px}   /* 本走メモの枠の左上(元の GS の行
 label.memo-chk input{width:13px;height:13px;margin:0}
 .gsline{font-size:26px;color:#c4c8d0;position:relative;left:8px;top:4px}.gsline b{color:#fff}   /* GS の行(色は本走メモの h1 と同じ。2026-10-21 ユーザー指定で 13px の2倍・少し右下へ) */
 .actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
-.memobar{margin-bottom:4px}   /* GS の行 */
+.memobar{margin-bottom:4px;padding-bottom:14px;position:relative}   /* GS の行。下に保存先の説明(.savenote)を置く余白 */
 .memotop{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:6px 0 0 6px}   /* 本走メモの枠の上: チェックボックスの右に ③④ PNG 保存(2026-10-22 ユーザー指定で表の少し上へ)。④ の右端を拾得計画の表の右端にそろえる(幅は fitMemo が決める) */
-.memotop .pngcol{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-left:auto}.memotop .pngs{display:flex;flex-wrap:wrap;gap:8px}
-.savenote{font-size:12px;color:var(--mut)}   /* 「表の背景色設定」ボタンの下、左端をボタンにそろえる(2026-10-26 ユーザー指定) */
+.memotop .pngs{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+.savenote{font-size:12px;color:var(--mut);position:absolute;bottom:0;white-space:nowrap}   /* GS の行の下・本走メモの枠の少し上。左端を「表の背景色設定」ボタンにそろえる(left は placeNote が決める。2026-10-26 ユーザー指定) */
 button.green{background:#3c7a3a;border-color:#3c7a3a;color:#fff;font-weight:bold}   /* 「列の背景色」(2026-10-26 ユーザー指定で緑) */
 dialog#bgdlg{background:#18241b;color:var(--fg);border:1px solid var(--ln);border-radius:8px;padding:14px 16px;font-size:13px;min-width:22em}   /* 列の背景色のポップアップ(2026-10-26。本体 = 黒に近い淡い緑、見出しの帯 = ボタンと同じ緑) */
 dialog#bgdlg::backdrop{background:transparent}   /* 開いても画面を暗くしない(2026-10-26 ユーザー指定) */
@@ -135,7 +135,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <h1 data-i18n="h1">本走メモ作成(ベルセリア リマスター RTA トレジャーポイント拾得計画)</h1>
 <label class="lang"><input type="checkbox" id="lang"> English</label>
 </div>
-<p class="lead" data-i18n="lead">NewGame までの操作(または n0)と目標確保数を入力して、「↓計画を出力↓」を押すと、本走用のメモ(拾得計画の表)が出力されます。</p>
+<p class="lead" data-i18n="lead">NewGame までの操作(または n0)と目標確保数を入力して「↓計画を出力↓」ボタンを押すと、本走用のメモ(拾得計画の表)が出力されます。</p>
 </header>
 <nav class="tabs">
 <button class="tab on" id="tab_plan" data-i18n="tab_plan">TP拾得表計画の作成</button>
@@ -158,7 +158,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <tr><td class="op pur" data-i18n="op_rs">リザルトセリフ抽選を受ける(利用非推奨 ※3)</td><td class="cnt"><select id="rs" class="in-g"></select></td><td class="num" id="c_rs"></td></tr>
 <tr><td class="op" data-i18n="op_ng"><span class="red">NewGame 選択の瞬間(※2)</span>(8662)</td><td class="cnt"><select id="ng" class="in-o"></select></td><td class="num" id="c_ng"></td></tr>
 <tr><td class="op" data-i18n="op_auto">n0(= 上記の合計 − 最後の NewGame の 8662)</td><td colspan="2" class="num fix" id="n0auto" style="text-align:center"></td></tr>
-<tr><td class="op" data-i18n="op_n0">n0 を直接入力<span class="blue">(入れるとこちらを優先して使用)</span></td><td colspan="2" class="num"><input id="n0" class="in-o" type="number" min="0" step="1" placeholder="空欄"></td></tr>
+<tr><td class="op" data-i18n="op_n0">n0 を直接入力 (<b class="wb">※入れるとこちらを優先して使用</b>)</td><td colspan="2" class="num"><input id="n0" class="in-o" type="number" min="0" step="1" placeholder="空欄"></td></tr>
 <tr><td class="op res" data-i18n="op_use"><b>使う n0 / GlobalSeed</b></td><td colspan="2" class="num res"><b id="n0use">-</b> / <b id="gsv">-</b></td></tr>
 </tbody>
 </table>
@@ -188,13 +188,14 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <hr class="sep">
 <div class="memobar" id="memobar">
 <span class="gsline" id="gsline"></span>
+<span class="savenote" id="savenote" data-i18n="savenote">表の背景色、見た目欄の文言は、各自のブラウザに保存されます。</span>
 </div>
 <div class="memo-wrap"><div class="memotop" id="memotop"><label class="chk memo-chk"><input type="checkbox" id="skopt"> <span data-i18n="skopt">分解する装備 / 素材潤沢ならカットする装備 のランダムスキルも表示する。</span></label>
-<span class="pngcol"><span class="pngs">
+<span class="pngs">
 <button id="bgbtn" class="green" disabled data-i18n="b_bg">表の背景色設定</button>
 <button id="png_plan" class="primary" disabled data-i18n="b_png_plan">pngで保存 (拾得計画表のみ)</button>
 <button id="png_all" disabled data-i18n="b_png_all">pngで保存 (拾得計画表 / ランダムスキル表 / リザルトセリフ表 全て)</button>
-</span><span class="savenote" data-i18n="savenote">表の背景色、見た目欄の文言は、各自のブラウザに保存されます。</span></span></div>
+</span></div>
 <dialog id="bgdlg"><h3 data-i18n="bg_title">表の背景色設定</h3><div id="bg_main"><div id="bg_list"></div><div id="bg_pk" hidden><div id="pk_sv"><i class="kn" id="pk_svk"></i></div><div id="pk_h"><i class="kn" id="pk_hk"></i></div><div class="r"><input id="pk_hex" maxlength="7" spellcheck="false"><span id="pk_pv"></span><button id="bg_ok" class="primary" data-i18n="bg_ok">決定</button></div></div><div class="r end"><button id="bg_clearall" data-i18n="bg_clearall">すべて初期色に戻す</button><button id="bg_close" data-i18n="bg_close">閉じる</button></div></div><div id="bg_ask" hidden><div class="r" data-i18n="bg_ask">すべてのダンジョンを初期色に戻しますか？</div><div class="r"><button id="bg_yes" class="primary" data-i18n="bg_yes">戻す</button><button id="bg_no" data-i18n="bg_no">やめる</button></div></div></dialog>
 <iframe id="memo" title="本走メモ" scrolling="no"></iframe></div>
 <iframe id="pngbox" title="PNG" scrolling="no" aria-hidden="true" tabindex="-1"></iframe>
@@ -944,7 +945,7 @@ function tpMemoEsc_(s) {   // Python の html.escape と同じ
 // 英語版の文言(2026-10-20)。en = 英語の辞書(基準記録/lang/en.json = ページの TP_EN)。en が無ければ日本語
 var TP_MEMO_ABBR_EN = { '青銅の塊': 'Br', '琥珀の欠片': 'Am', '黒銀の塊': 'Si', '下級の錬成粉': 'Pw', '方解石の欠片': 'Ca' };
 var TP_MEMO_TXT = {
-  ja: { hdr: ['ID', 'フロア', '訪問区分', '見た目'], total: '合計(青銅 / 琥珀 / 黒銀 / 錬成粉 / 方解石)', take: '回収', skip: '取らない',
+  ja: { hdr: ['ID', 'フロア', '訪問区分', '見た目'], total: ['合計(', ['青銅', '琥珀', '黒銀', '錬成粉', '方解石'], ')'], take: '回収', skip: '取らない',
     kw: 'ゼクソン港 倉庫の琥珀の宝箱(エレノア①前)', k9: '⑨古びた槍(ヴェスター坑道 D09)', kt: '⑩トランクィッロ(カドニクス港、青銅3個未満なら回収)',
     kb: '⑪バッドソーンズ(レニードの街1回目、青銅2個未満なら回収)',
     warn: '上記の計画表に書かれていないトレジャーポイントは、光っていても拾わないでください。', free: '同じフロア内の宝箱・トレジャーポイントであれば拾う順番は自由です。',
@@ -952,7 +953,7 @@ var TP_MEMO_TXT = {
     // 宝箱の行(2026-10-26 ユーザー指定で上の表に統合): [フロア, 見た目]
     chests: { kw: ['ゼクソン港 倉庫', '琥珀の宝箱(エレノア①前)'], k9: ['ヴェスター坑道 クロガネの工房', '⑨古びた槍'],
       kt: ['カドニクス港', '⑩トランクィッロ(青銅3個未満なら回収)'], kb: ['レニードの街', '⑪バッドソーンズ(1回目、青銅2個未満なら回収)'] }, chestId: '宝箱' },   // 「進行合計 = …」の見出しは 2026-10-21 ユーザー指定で削除(ページ下の注記に同じ説明がある)
-  en: { hdr: ['ID', 'Location', 'Visit', 'Where to look'], total: 'Total (Bronze / Amber / Silver / Powder / Calcite)', take: 'Take', skip: 'Skip',
+  en: { hdr: ['ID', 'Location', 'Visit', 'Where to look'], total: ['Total (', ['Bronze', 'Amber', 'Silver', 'Powder', 'Calcite'], ')'], take: 'Take', skip: 'Skip',
     kw: 'Port Zekson warehouse Amber chest (before Eleanor 1)', k9: '⑨ Worn Spear (Vester Tunnels D09)', kt: '⑩ Tranquillo (Port Cadnix; take if Bronze &lt; 3)',
     kb: '⑪ Thorny Waistcoat (Reneed, 1st visit; take if Bronze &lt; 2)',
     warn: 'Do not pick up any treasure point not listed in the plan above, even if it glows.', free: 'Within the same floor, you may open the listed chests and pick up the listed treasure points in any order.',
@@ -1018,7 +1019,7 @@ function tpMemoPlanTable_(res, en, bg, looks) {
   return '<table>\n' +
     '<tr>' + T.hdr.map(function (h) { return '<th>' + h + '</th>'; }).join('') + K.map(function (k) { return '<th class="pk">+' + k + '</th>'; }).join('') + '</tr>\n' +
     rows.join('\n') + '\n' +
-    '<tfoot><tr><td colspan="4">' + T.total + '</td>' + K.map(function (k) { return '<td>' + String(res[k].cnt).split('/').map(function (x, i) { return '<span class="' + CNTCLS[i] + ' nb">' + x + '</span>'; }).join('-') + '</td>'; }).join('') + '</tr>\n' +
+    '<tfoot><tr><td colspan="4">' + T.total[0] + T.total[1].map(function (x, i) { return '<span class="' + CNTCLS[i] + ' nb">' + x + '</span>'; }).join(' / ') + T.total[2] + '</td>' + K.map(function (k) { return '<td>' + String(res[k].cnt).split('/').map(function (x, i) { return '<span class="' + CNTCLS[i] + ' nb">' + x + '</span>'; }).join('-') + '</td>'; }).join('') + '</tr>\n' +
     (cop ? '' : ['kw', 'k9', 'kt', 'kb'].map(function (c) { return '<tr><td colspan="4">' + T[c] + '</td>' + chest(c, CHEST[c][0]) + '</tr>\n'; }).join('')) + '</tfoot>\n' +
     '</table>\n' +
     '<div class="nt"><span class="warn">' + T.warn + '</span></div>\n' +
@@ -1926,7 +1927,7 @@ function tpSeedIsTop_(opts, c) {
   // 英語版のページの文言(2026-10-20)。キー = HTML の data-i18n。日本語は HTML に書いてあるもの
   var I18N = {
     h1: 'Run Memo Builder (Tales of Berseria Remastered RTA &mdash; treasure point pickup plan)',
-    lead: 'Enter your actions before NewGame (or n0) and your target counts, then press &ldquo;&darr;Build plan&darr;&rdquo; to output the run memo (pickup plan table).', savenote: 'Your table colors and &ldquo;Where to look&rdquo; texts are saved in your own browser.',
+    lead: 'Enter your actions before NewGame (or n0) and your target counts, then press the &ldquo;&darr;Build plan&darr;&rdquo; button to output the run memo (pickup plan table).', savenote: 'Your table colors and &ldquo;Where to look&rdquo; texts are saved in your own browser.',
     h_ops: '• Actions before NewGame', th_op: 'Action', th_cnt: 'Times', th_rng: 'RNG calls',
     op_boot: 'Launch &rarr; first title screen (17324)', fixed1: '1 (fixed)',
     op_ld: 'Load a save (including quick load)<br>Choose &ldquo;Return to Title&rdquo; in another save<br>Lose a battle and see the retry screen',
@@ -1934,7 +1935,7 @@ function tpSeedIsTop_(opts, c) {
     op_rs: 'Get a result-line roll (not recommended ※3)',
     op_ng: '<span class="red">Moment you select NewGame (※2)</span> (8662)',
     op_auto: 'n0 (= total above &minus; 8662 for the last NewGame)',
-    op_n0: 'Enter n0 directly <span class="blue">(overrides the table above)</span>',
+    op_n0: 'Enter n0 directly (<b class="wb">* overrides the table above</b>)',
     op_use: '<b>n0 used / GlobalSeed</b>',
     fn1: '<b class="blue">※1</b>: Load a save point near a location change and adjust by going back and forth between maps.',
     fn2: '<b class="red">※2</b>: Back out of the Grade Shop to the title without doing anything and select NewGame again for another +8662, as many times as you like.',
@@ -2191,8 +2192,14 @@ function tpSeedIsTop_(opts, c) {
     // ③④ の行: ④ の右端を拾得計画の表の右端にそろえる(2026-10-21 ユーザー指定。表の座標は iframe の中の値なので zoom を掛ける)
     var t = d.querySelector('.row > div:last-child table') || d.querySelector('table'), bar = $('memotop');
     if (t && f.getBoundingClientRect().width > 0) bar.style.width = Math.round(f.getBoundingClientRect().left + t.getBoundingClientRect().right * z - bar.getBoundingClientRect().left) + 'px';
+    placeNote();
+  }
+  function placeNote() {   // 保存先の説明の左端 = 「表の背景色設定」ボタンの左端(2026-10-26 ユーザー指定)
+    var b = $('bgbtn').getBoundingClientRect(); if (!b.width) return;
+    $('savenote').style.left = Math.round(b.left - $('memobar').getBoundingClientRect().left) + 'px';
   }
   window.addEventListener('resize', fitMemo);
+  placeNote();
   // 列の背景色(2026-10-26 ユーザー指定): ダンジョン名(日本語)→ 色。初期の色 = ROWBG_DEF(2026-10-26 ユーザーがこのページで選んだ12色を登録。同日、その後の変更5色を反映。同日、ユーザーの Chrome で付けた5色を追加)、
   // 各自の変更は ROWBG(このブラウザの localStorage。使えなければ保存しないだけ)。表の行には memo_render.js が data-a = ダンジョン名を付ける。
   // 編集はポップアップ(dialog)。カラーピッカーで選んでいる間は表に仮に塗る(保存しない)。「決定」で保存(PNG と次の計算は rowBgMap() から作る)。
