@@ -2193,20 +2193,25 @@ function tpSeedIsTop_(opts, c) {
     if (t && f.getBoundingClientRect().width > 0) bar.style.width = Math.round(f.getBoundingClientRect().left + t.getBoundingClientRect().right * z - bar.getBoundingClientRect().left) + 'px';
   }
   window.addEventListener('resize', fitMemo);
-  // 列の背景色(2026-10-26 ユーザー指定): ダンジョン名(日本語)→ 色。初期の色 = ROWBG_DEF(2026-10-26 ユーザーがこのページで選んだ12色を登録。同日、その後の変更5色を反映)、
+  // 列の背景色(2026-10-26 ユーザー指定): ダンジョン名(日本語)→ 色。初期の色 = ROWBG_DEF(2026-10-26 ユーザーがこのページで選んだ12色を登録。同日、その後の変更5色を反映。同日、ユーザーの Chrome で付けた5色を追加)、
   // 各自の変更は ROWBG(このブラウザの localStorage。使えなければ保存しないだけ)。表の行には memo_render.js が data-a = ダンジョン名を付ける。
   // 編集はポップアップ(dialog)。カラーピッカーで選んでいる間は表に仮に塗る(保存しない)。「決定」で保存(PNG と次の計算は rowBgMap() から作る)。
   // 決定せずに閉じる・ダンジョンを選び直す → 仮の色を元に戻す(2026-10-26 ユーザー指定)。
   // ポップアップの外を押す・Esc・閉じる = 決定していない色は捨てる。「すべて初期色に戻す」は確認してから
-  var ROWBG_DEF = {"西ラバン洞穴":"#132517","海門要塞 ヴォーティガン":"#264954","ゼクソン港":"#3e240f","栄光ある王都 ローグレス":"#51451a","王都地下道":"#320f43","ローグレス離宮":"#13213f","聖主の御座":"#244b5c","イボルク遺跡":"#3f2c2c","ヴェスター坑道":"#0b2251","カドニクス港":"#2d3c10","レニードの街":"#332c68","ワァーグ樹林":"#0d2f09"};
+  var ROWBG_DEF = {"西ラバン洞穴":"#132517","海門要塞 ヴォーティガン":"#264954","ゼクソン港":"#3e240f","栄光ある王都 ローグレス":"#51451a","王都地下道":"#320f43","ローグレス離宮":"#13213f","聖主の御座":"#244b5c","イボルク遺跡":"#3f2c2c","ヴェスター坑道":"#0b2251","カドニクス港":"#2d3c10","レニードの街":"#332c68","ワァーグ樹林":"#0d2f09","ブルナーク台地":"#6f6637","ダーナ街道":"#5daf39","ガリス湖道":"#3bcaf3","ノーグ湿原":"#53743c","対魔士の塔 ロウライネ":"#8a5a0d"};
+  // 同じ色にまとめる地名(2026-10-26 ユーザー指定): 一覧には出さず、まとめ先の色で塗る
+  var BG_ALIAS = {'レニード': 'レニードの街', 'ブルナーク台地(2回目訪問)': 'ブルナーク台地'};
   var ROWBG = {};
   try { ROWBG = JSON.parse(localStorage.getItem('tpRowBg') || '{}') || {}; } catch (e) { ROWBG = {}; }
-  Object.keys(ROWBG).forEach(function (a) { if (ROWBG[a] === ROWBG_DEF[a]) delete ROWBG[a]; });   // 初期の色と同じものは変更なし扱い
+  Object.keys(ROWBG).forEach(function (a) { if (ROWBG[a] === ROWBG_DEF[a] || BG_ALIAS[a]) delete ROWBG[a]; });   // 初期の色と同じものは変更なし扱い
   function saveBg() { try { localStorage.setItem('tpRowBg', JSON.stringify(ROWBG)); } catch (e) {} }
-  function rowBgMap() { return Object.assign({}, ROWBG_DEF, ROWBG); }
+  function rowBgMap() { var m = Object.assign({}, ROWBG_DEF, ROWBG); Object.keys(BG_ALIAS).forEach(function (k) { if (m[BG_ALIAS[k]]) m[k] = m[BG_ALIAS[k]]; else delete m[k]; }); return m; }
+  function bgTrs(d, a) {   // そのダンジョン(とまとめた地名)の表の行
+    return d.querySelectorAll([a].concat(Object.keys(BG_ALIAS).filter(function (k) { return BG_ALIAS[k] === a; })).map(function (x) { return 'tr[data-a="' + CSS.escape(x) + '"]'; }).join(','));
+  }
   function bgAreas() {   // 全ダンジョン(ルート順): 台本でトレジャーポイントを抽選するグループの地名と、宝箱を開ける位置の地名(本走メモの宝箱の行と同じ名前)
     var D = L.TP_DATA, seen = [], CH = { 5: 'ヴェスター坑道', 6: 'ゼクソン港', 7: 'カドニクス港', 8: 'レニードの街' };
-    function add(a) { if (a && seen.indexOf(a) < 0) seen.push(a); }
+    function add(a) { a = BG_ALIAS[a] || a; if (a && seen.indexOf(a) < 0) seen.push(a); }
     D.ops.forEach(function (o) { if (o[0] === 0 && D.cands[o[1]]) D.cands[o[1]].forEach(function (p) { add(p.s[0]); }); else if (CH[o[0]]) add(CH[o[0]]); });
     Object.keys(rowBgMap()).forEach(add);
     return seen;
@@ -2215,7 +2220,7 @@ function tpSeedIsTop_(opts, c) {
   function bgName(a) { return escH(isEn() ? (TP_EN.areas && TP_EN.areas[a]) || a : a.replace(/^海門要塞 /, '')); }
   function bgColorOf(a) {   // 今の色(色が無いダンジョンは表の帯の色、表に出ていなければ黒)
     var c = rowBgMap()[a]; if (c) return c;
-    var d = $('memo').contentDocument, td = d ? d.querySelector('tr[data-a="' + CSS.escape(a) + '"] td') : null;
+    var d = $('memo').contentDocument, td = d ? (bgTrs(d, a)[0] || {}).firstElementChild : null;
     return td ? rgbHex(getComputedStyle(td).backgroundColor) : '#08090b';
   }
   function bgRowEl(a) { return $('bg_list').querySelector('.bgrow[data-a="' + CSS.escape(a) + '"]'); }
@@ -2233,7 +2238,7 @@ function tpSeedIsTop_(opts, c) {
   }
   function bgApply(a) {   // 表示中の表のそのダンジョンの行を塗り替える
     var d = $('memo').contentDocument, c = rowBgMap()[a]; if (!d) return;
-    d.querySelectorAll('tr[data-a="' + CSS.escape(a) + '"]').forEach(function (tr) {
+    bgTrs(d, a).forEach(function (tr) {
       if (c) { tr.classList.add('cb'); tr.style.setProperty('--rb', c); tr.style.setProperty('--rl', L.tpMemoLine_(c)); } else { tr.classList.remove('cb'); tr.style.removeProperty('--rb'); tr.style.removeProperty('--rl'); }
     });
   }
@@ -2273,7 +2278,7 @@ function tpSeedIsTop_(opts, c) {
   var bgTry = null;   // 仮に塗っているダンジョン
   function bgPreview(a, c) {
     var d = $('memo').contentDocument; if (!d) return;
-    d.querySelectorAll('tr[data-a="' + CSS.escape(a) + '"]').forEach(function (tr) { tr.classList.add('cb'); tr.style.setProperty('--rb', c); tr.style.setProperty('--rl', L.tpMemoLine_(c)); });
+    bgTrs(d, a).forEach(function (tr) { tr.classList.add('cb'); tr.style.setProperty('--rb', c); tr.style.setProperty('--rl', L.tpMemoLine_(c)); });
     bgTry = a;
   }
   function bgRevert() { if (bgTry !== null) { bgApply(bgTry); bgTry = null; } }   // 保存してある色に戻す
