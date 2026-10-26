@@ -908,7 +908,7 @@ var TP_MEMO_STYLE = '<style>\n' +
   '.c{text-align:center}\n' +
   '.sp{color:var(--mut);font-size:10px}\n' +
   '.cu{color:var(--cu);font-weight:bold}.am{color:var(--am);font-weight:bold}.ag{color:var(--ag);font-weight:bold}.ok{color:var(--ok);font-weight:bold}.ca{color:var(--ca);font-weight:bold}\n' +
-  '.id{color:var(--mut);text-align:right}\n' +
+  '.id{color:var(--mut);text-align:center}\n' +
   '.lk{font-size:11px}\n' +
   '.vk{font-size:11px;color:var(--mut);text-align:center}\n' +
   'th.pk{font-weight:bold;color:var(--fg)}\n' +
@@ -921,7 +921,7 @@ var TP_MEMO_STYLE = '<style>\n' +
   '.how{margin-top:8px;border:1px solid var(--ln);padding:4px 6px;font-size:11px;line-height:1.45}\n' +
   '.how b{color:var(--fg)}.how ol{margin:2px 0 0;padding-left:18px}.how li{white-space:normal}.how .sp{font-size:10px}\n' +
   'tfoot td{color:var(--mut);text-align:center;font-size:11px}\n' +
-  'tfoot td.cu{color:var(--cu)}tfoot td.am{color:var(--am)}tfoot td.ag{color:var(--ag)}tfoot .nb{font-weight:normal}td.no{color:#ff8cc6;font-weight:normal;text-align:center}td.cid{color:var(--mut);text-align:right;font-size:11px}\n' +   /* 合計の数字・「取らない」は素材の色で、太字にしない(2026-10-24 ユーザー指定) */
+  'tfoot td.cu{color:var(--cu)}tfoot td.am{color:var(--am)}tfoot td.ag{color:var(--ag)}tfoot .nb{font-weight:normal}td.no{color:#ff8cc6;font-weight:normal;text-align:center}td.cid{color:#ff8cc6;text-align:center;font-size:11px}td.cp{color:#ff8cc6}\n' +   /* 合計の数字・「取らない」は素材の色で、太字にしない(2026-10-24 ユーザー指定) */
   'html[lang=en] td.lk{white-space:normal;min-width:240px;max-width:320px}html[lang=en] table:not(.sk) tbody td:nth-child(2),html[lang=en] table:not(.sk) tr.d0 td:nth-child(2),html[lang=en] table:not(.sk) tr.d1 td:nth-child(2){white-space:normal;max-width:230px}\n' +   /* 英語版は説明が長いので折り返す(2026-10-20) */
   /* ウェブページの「予測されるランダムスキル」(2026-10-20) */ '.sk td{font-size:11px}.sk .sn{color:#9a9a9a;font-weight:normal}.sk .si{font-weight:bold}.sk .sb{color:#ff4fa3;font-weight:bold}.sk .so{color:#e06666}.sk .sa{color:#ff4040}.sk .sg{color:#5cbf5c;font-weight:bold}\n' +   /* sg = 対象装備以外の BS・攻撃力(方解石 #86e086 より少し濃い緑) */
   '</style>';
@@ -993,7 +993,7 @@ function tpMemoPlanTable_(res, en, bg) {
     if (key.indexOf('chest|') === 0) {
       var c = key.slice(6), cl = T.chests[c];
       if (CHEST[c][1] !== dungeon) { dungeon = CHEST[c][1]; band = 1 - band; }
-      rows.push(trOpen(dungeon) + '<td class="cid">' + T.chestId + '</td><td>' + cl[0] + '</td><td class="vk"></td><td class="lk">' + cl[1] + '</td>' + chest(c, CHEST[c][0]) + '</tr>');
+      rows.push(trOpen(dungeon) + '<td class="cid">' + T.chestId + '</td><td class="cp">' + cl[0] + '</td><td class="vk"></td><td class="lk cp">' + cl[1] + '</td>' + chest(c, CHEST[c][0]) + '</tr>');
       return;
     }
     var q = info[key], pid = q.id;
@@ -1014,7 +1014,7 @@ function tpMemoPlanTable_(res, en, bg) {
   return '<table>\n' +
     '<tr>' + T.hdr.map(function (h) { return '<th>' + h + '</th>'; }).join('') + K.map(function (k) { return '<th class="pk">+' + k + '</th>'; }).join('') + '</tr>\n' +
     rows.join('\n') + '\n' +
-    '<tfoot><tr><td colspan="4">' + T.total + '</td>' + K.map(function (k) { return '<td>' + String(res[k].cnt).split('/').map(function (x, i) { return '<span class="' + CNTCLS[i] + ' nb">' + x + '</span>'; }).join('/') + '</td>'; }).join('') + '</tr>\n' +
+    '<tfoot><tr><td colspan="4">' + T.total + '</td>' + K.map(function (k) { return '<td>' + String(res[k].cnt).split('/').map(function (x, i) { return '<span class="' + CNTCLS[i] + ' nb">' + x + '</span>'; }).join('-') + '</td>'; }).join('') + '</tr>\n' +
     (cop ? '' : ['kw', 'k9', 'kt', 'kb'].map(function (c) { return '<tr><td colspan="4">' + T[c] + '</td>' + chest(c, CHEST[c][0]) + '</tr>\n'; }).join('')) + '</tfoot>\n' +
     '</table>\n' +
     '<div class="nt"><span class="warn">' + T.warn + '</span></div>\n' +
