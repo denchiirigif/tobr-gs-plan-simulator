@@ -968,7 +968,8 @@ function tpMemoLine_(c) {
   return '#' + rgb.map(function (x) { var y = dark ? x + (255 - x) * 0.25 : x * 0.7; return ('0' + Math.round(y).toString(16)).slice(-2); }).join('');
 }
 // bg = ウェブページのときだけ { ダンジョン名: 色 }(行に data-a = ダンジョン名を付け、色があればその色の背景。2026-10-26 ユーザー指定)
-function tpMemoPlanTable_(res, en, bg) {
+// looks = ウェブページのときだけ { 地点ID または chest:kw など: 自分の文言 }(見た目の欄に data-k = その鍵を付け、文言があれば見た目をそれに置き換える。日英共通。2026-10-26 ユーザー指定)
+function tpMemoPlanTable_(res, en, bg, looks) {
   var T = TP_MEMO_TXT[en ? 'en' : 'ja'];
   var tr = function (dict, v) { return en && dict && v in dict ? dict[v] : v; };   // 訳が無ければ日本語のまま
   var K = Object.keys(res).filter(function (k) { return /^\d+$/.test(k); }).sort(function (a, b) { return a - b; }), cell = {}, firstOp = {}, info = {}, seenOrder = [];
@@ -993,7 +994,7 @@ function tpMemoPlanTable_(res, en, bg) {
     if (key.indexOf('chest|') === 0) {
       var c = key.slice(6), cl = T.chests[c];
       if (CHEST[c][1] !== dungeon) { dungeon = CHEST[c][1]; band = 1 - band; }
-      rows.push(trOpen(dungeon) + '<td class="cid">' + T.chestId + '</td><td class="cp">' + cl[0] + '</td><td class="vk"></td><td class="lk cp">' + cl[1] + '</td>' + chest(c, CHEST[c][0]) + '</tr>');
+      rows.push(trOpen(dungeon) + '<td class="cid">' + T.chestId + '</td><td class="cp">' + cl[0] + '</td><td class="vk"></td><td class="lk cp"' + lkAttr('chest:' + c) + '>' + myLook('chest:' + c, cl[1]) + '</td>' + chest(c, CHEST[c][0]) + '</tr>');
       return;
     }
     var q = info[key], pid = q.id;
@@ -1004,8 +1005,10 @@ function tpMemoPlanTable_(res, en, bg) {
     var vk = q.visit ? tr(en && en.vnames, q.visit) : '';   // 訪問が1回だけのフロアは空
     var tds = K.map(function (k) { return key in cell[k] ? '<td class="c ' + cell[k][key][1] + '">' + cell[k][key][0] + '</td>' : '<td></td>'; }).join('');
     rows.push(trOpen(dungeon) + '<td class="id">' + pid + '</td><td>' + tpMemoEsc_(lab[0]) + '</td><td class="vk">' +
-      (vk ? '&lt;' + tpMemoEsc_(vk) + '&gt;' : '') + '</td><td class="lk">' + (en ? tpMemoEsc_(lab[1]).replace(/\n/g, '<br>') : tpMemoEsc_(lab[1])) + '</td>' + tds + '</tr>');
+      (vk ? '&lt;' + tpMemoEsc_(vk) + '&gt;' : '') + '</td><td class="lk"' + lkAttr(String(pid)) + '>' + myLook(String(pid), en ? tpMemoEsc_(lab[1]).replace(/\n/g, '<br>') : tpMemoEsc_(lab[1])) + '</td>' + tds + '</tr>');
   });
+  function lkAttr(k) { return looks ? ' data-k="' + tpMemoEsc_(k) + '"' : ''; }
+  function myLook(k, def) { return looks && looks[k] ? tpMemoEsc_(looks[k]) : def; }   // def は HTML のまま(宝箱の文言は &lt; を含む)
   function trOpen(a) { return '<tr class="d' + band + (bg && bg[a] ? ' cb" style="--rb:' + bg[a] + ';--rl:' + tpMemoLine_(bg[a]) : '') + '"' + (bg ? ' data-a="' + tpMemoEsc_(a) + '"' : '') + '>'; }
   var CNTCLS = ['cu', 'am', 'ag', 'ok', 'ca'];   // 合計の並び 青銅/琥珀/黒銀/錬成粉/方解石 の色(2026-10-24)
   function chest(key, cls) {
@@ -1037,9 +1040,9 @@ function tpMemoBody_(res, how, web) {
   var en = web && web.en;
   var h1 = web && web.noH1 ? '' : '<h1><b>GS ' + m.gs + '</b>' + (en ? ' (n0 ' + m.n0 + ')' : '(n0 ' + m.n0 + ')') + '</h1>';   // noH1 = ページの表示用(GS の行はページ側に出す。PNG には入れる。2026-10-21)
   if (web) {   // ウェブページ(2026-10-20 ユーザー指定): 左の欄 = 予測されるランダムスキル(web.skills)、右 = 拾得計画。増分表はメモに入れず、ページの入力欄に出す
-    if (web.planOnly) return h1 + '\n\n' + tpMemoPlanTable_(res, en, web.rowBg || {}) + '\n';   // PNG「拾得計画テーブルのみ」(2026-10-21)
+    if (web.planOnly) return h1 + '\n\n' + tpMemoPlanTable_(res, en, web.rowBg || {}, web.looks || {}) + '\n';   // PNG「拾得計画テーブルのみ」(2026-10-21)
     return h1 + '\n\n<div class="row"><div class="lc"><div>\n' + (web.battle ? web.battle + '\n' : '') + (web.skills || '') + '\n</div>\n' + (how || '') +   // web.battle = PNG「拾得計画、ランダムスキル、セリフ表」のときだけ増分表を左上に(2026-10-21)
-      '\n</div><div>\n<h2>&nbsp;</h2>\n' + tpMemoPlanTable_(res, en, web.rowBg || {}) + '\n</div></div>\n';   // 空の見出し = 拾得計画の表の上端を左の表(見出しの下)の上端にそろえる(2026-10-21 ユーザー指定)
+      '\n</div><div>\n<h2>&nbsp;</h2>\n' + tpMemoPlanTable_(res, en, web.rowBg || {}, web.looks || {}) + '\n</div></div>\n';   // 空の見出し = 拾得計画の表の上端を左の表(見出しの下)の上端にそろえる(2026-10-21 ユーザー指定)
   }
   return h1 + '\n\n<div class="row"><div class="lc"><div>\n' + TP_MEMO_BATTLE + '\n</div>\n' + (how || '') + '\n</div><div>\n' + tpMemoPlanTable_(res) + '\n</div></div>\n';
 }
@@ -2324,15 +2327,68 @@ function tpSeedIsTop_(opts, c) {
   $('bg_yes').addEventListener('click', function () { var as = Object.keys(ROWBG); ROWBG = {}; saveBg(); bgRevert(); as.forEach(bgApply); bgFill(); bgConfirm(false); });
   $('bg_no').addEventListener('click', function () { bgConfirm(false); });
   $('bg_close').addEventListener('click', function () { $('bgdlg').close(); });
+  // 見た目の欄の文言(2026-10-26 ユーザー指定): 各自が地点ごとに書き換えられる。鍵 = 地点ID(宝箱は chest:kw など。memo_render.js の data-k)→ 文言。
+  // このブラウザの localStorage tpLook に保存(使えなければ保存しないだけ)。日英共通(自分で書いた文言はどちらの表示でもそのまま出す)。PNG にも入る。
+  // 表示中の表の見た目の欄の右端にペンのボタン(PNG には入れない)。押すとその欄が入力欄になり、決定(Enter)で保存、Esc・欄の外を押す = 取り消し。
+  // 「初期に戻す」(自分の文言があるときだけ)・空にして決定 = 初期の文言に戻す。自分の文言にした欄はペンが緑
+  var LOOKS = {};
+  try { LOOKS = JSON.parse(localStorage.getItem('tpLook') || '{}') || {}; } catch (e) { LOOKS = {}; }
+  function saveLooks() { try { localStorage.setItem('tpLook', JSON.stringify(LOOKS)); } catch (e) {} }
+  var LK_PEN = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M11.7 1.6a1.6 1.6 0 0 1 2.3 0l.4.4a1.6 1.6 0 0 1 0 2.3L5.2 13.5 1.6 14.4l.9-3.6zM10.6 3.8l1.6 1.6"/></svg>';
+  var LK_CSS = 'td.lk[data-k]{position:relative;padding-right:22px}' +
+    'td.lk .pen{position:absolute;right:3px;top:50%;transform:translateY(-50%);width:16px;height:16px;padding:0;border:0;background:none;color:var(--mut);opacity:.4;cursor:pointer}' +
+    'td.lk .pen:hover{opacity:1}td.lk.my .pen{color:#7fd17f;opacity:.9}td.lk .pen svg{display:block;width:14px;height:14px}' +
+    '.lked{display:flex;gap:4px;align-items:center}.lked input{font:inherit;font-size:12px;width:20em;padding:1px 4px;background:#14171d;color:#fff;border:1px solid #6cb4ff;border-radius:3px}' +
+    '.lked button{font:inherit;font-size:11px;padding:1px 7px;cursor:pointer;border-radius:3px;border:1px solid #556;background:#2a2f3a;color:#fff;white-space:nowrap}.lked button.ok{background:#2f6fd0;border-color:#2f6fd0;font-weight:bold}';
+  var lkEdit = null;   // 編集中 { td, html(元の中身), k }
+  function lkSetup() {   // 表示中の表の見た目の欄にペンを付ける
+    var d = $('memo').contentDocument; if (!d || !d.head) return;
+    var st = d.createElement('style'); st.textContent = LK_CSS; d.head.appendChild(st);
+    d.querySelectorAll('td.lk[data-k]').forEach(function (td) {
+      td.classList.toggle('my', !!LOOKS[td.dataset.k]);
+      td.insertAdjacentHTML('beforeend', '<button class="pen" title="' + escH(T('文言を編集', 'Edit text')) + '">' + LK_PEN + '</button>');
+    });
+    d.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('td.lk .pen'); if (b) { lkCancel(); lkOpen(b.closest('td')); } });
+    d.addEventListener('pointerdown', function (e) { if (lkEdit && !lkEdit.td.contains(e.target)) lkCancel(); }, true);
+    lkEdit = null;
+  }
+  document.addEventListener('pointerdown', function () { lkCancel(); }, true);   // ページ側(表の外)を押しても取り消し
+  function lkOpen(td) {
+    var k = td.dataset.k, pen = td.querySelector('.pen'); pen.remove();
+    var cur = td.textContent; td.appendChild(pen);
+    lkEdit = { td: td, html: td.innerHTML, k: k, cur: cur };
+    td.innerHTML = '<div class="lked"><input spellcheck="false"><button class="ok">' + escH(T('決定', 'Apply')) + '</button>' +
+      (LOOKS[k] ? '<button class="rs">' + escH(T('初期に戻す', 'Default')) + '</button>' : '') + '</div>';
+    var inp = td.querySelector('input'); inp.value = cur;
+    inp.addEventListener('keydown', function (e) {
+      if (e.isComposing || e.keyCode === 229) return;   // 日本語入力の変換中の Enter・Esc は確定に使う
+      if (e.key === 'Enter') { e.preventDefault(); lkSave(inp.value); } else if (e.key === 'Escape') { e.preventDefault(); lkCancel(); }
+    });
+    td.querySelector('.ok').addEventListener('click', function () { lkSave(inp.value); });
+    if (td.querySelector('.rs')) td.querySelector('.rs').addEventListener('click', function () { lkSave(''); });
+    fitMemo(); inp.focus(); inp.select();
+  }
+  function lkCancel() { if (lkEdit) { lkEdit.td.innerHTML = lkEdit.html; lkEdit = null; fitMemo(); } }
+  function lkSave(v) {
+    var e = lkEdit; if (!e) return;
+    v = v.replace(/\s+/g, ' ').trim();
+    if (!v) delete LOOKS[e.k];
+    else if (LOOKS[e.k] || v !== e.cur) LOOKS[e.k] = v;   // 初期の文言のまま決定しても保存しない
+    saveLooks(); lkEdit = null; memoDraw();
+  }
+  function memoDraw() {   // 表示中の本走メモを今の設定(言語・背景色・文言)で作り直す(計算はしない)
+    var res = last, en = isEn() ? TP_EN : null;
+    var f = $('memo'), html = L.tpMemoHtml_(res, '', { skills: L.tpMemoSkills_(res.meta.gs, $('skopt').checked, en), en: en, noH1: true, rowBg: rowBgMap(), looks: LOOKS });
+    f.onload = function () { lkSetup(); fitMemo(); if ($('bgdlg').open) bgFill(); };
+    f.srcdoc = html;
+  }
   function show(res) {
     last = res;
     // 左の欄 = 予測されるランダムスキル、右 = 拾得計画(増分表は入力欄の③。2026-10-20 ユーザー指定)
     var en = isEn() ? TP_EN : null;
-    var f = $('memo'), html = L.tpMemoHtml_(res, '', { skills: L.tpMemoSkills_(res.meta.gs, $('skopt').checked, en), en: en, noH1: true, rowBg: rowBgMap() });
     // GS の行はチェックボックスと入れ替えて PNG ボタンの左に出す(2026-10-21 ユーザー指定。文字の色は本走メモの h1 と同じ、大きさはチェックボックスの 13px)
     $('gsline').innerHTML = '<b>GS ' + res.meta.gs + '</b>' + (en ? ' (n0 ' + res.meta.n0 + ')' : '(n0 ' + res.meta.n0 + ')');
-    f.onload = function () { fitMemo(); if ($('bgdlg').open) bgFill(); };
-    f.srcdoc = html;
+    memoDraw();
     $('png_plan').disabled = $('png_all').disabled = $('bgbtn').disabled = false;
     status(T('↓できました。GS' + res.meta.gs + '↓', '↓Done. GS' + res.meta.gs + '↓'));
   }
@@ -2393,8 +2449,8 @@ function tpSeedIsTop_(opts, c) {
   function savePng(kind) {
     if (!last) return;
     var en = isEn() ? TP_EN : null;
-    var web = kind === 'plan' ? { planOnly: true, en: en, rowBg: rowBgMap() }
-      : { skills: L.tpMemoSkills_(last.meta.gs, $('skopt').checked, en), battle: en ? '<h2>Extra RNG rolls from result lines (both battles)</h2>\n' + battleEn() : L.TP_MEMO_BATTLE, en: en, rowBg: rowBgMap() };
+    var web = kind === 'plan' ? { planOnly: true, en: en, rowBg: rowBgMap(), looks: LOOKS }
+      : { skills: L.tpMemoSkills_(last.meta.gs, $('skopt').checked, en), battle: en ? '<h2>Extra RNG rolls from result lines (both battles)</h2>\n' + battleEn() : L.TP_MEMO_BATTLE, en: en, rowBg: rowBgMap(), looks: LOOKS };
     var f = $('pngbox'), html = L.tpMemoHtml_(last, '', web);
     f.onload = function () { f.onload = null; savePngDoc(f.contentDocument, html, 1, T('本走メモ_GS', 'RunMemo_GS') + last.meta.gs + (kind === 'plan' ? T('_拾得計画', '_plan') : '') + '.png'); };
     f.srcdoc = html;
