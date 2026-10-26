@@ -135,10 +135,10 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 <h1 data-i18n="h1">本走メモ作成(ベルセリア リマスター RTA トレジャーポイント拾得計画)</h1>
 <label class="lang"><input type="checkbox" id="lang"> English</label>
 </div>
-<p class="lead" data-i18n="lead">NewGame までの操作(または n0)と目標確保数を入力して「↓計画を出力↓」ボタンを押すと、本走用のメモ(拾得計画の表)が出力されます。</p>
+<p class="lead" data-i18n="lead">NewGame までの操作(または n0)と目標確保数を入力して「↓計画表を出力↓」ボタンを押すと、本走用のメモ(拾得計画の表)が出力されます。</p>
 </header>
 <nav class="tabs">
-<button class="tab on" id="tab_plan" data-i18n="tab_plan">TP拾得表計画の作成</button>
+<button class="tab on" id="tab_plan" data-i18n="tab_plan">TP拾得計画表の作成</button>
 <button class="tab" id="tab_seed" data-i18n="tab_seed">シード探し</button>
 </nav>
 <main id="pg-plan">
@@ -181,14 +181,14 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </div>
 <div class="actions">
 <button id="reset" data-i18n="b_reset">↑初期値に戻す↑</button>
-<button id="run" class="primary" data-i18n="b_run">↓計画を出力↓</button>
+<button id="run" class="primary" data-i18n="b_run">↓計画表を出力↓</button>
 <span id="status"></span>
 </div>
 </section>
 <hr class="sep">
 <div class="memobar" id="memobar">
 <span class="gsline" id="gsline"></span>
-<span class="savenote" id="savenote" data-i18n="savenote">表の背景色、見た目欄の文言は、各自のブラウザに保存されます。</span>
+<span class="savenote" id="savenote" data-i18n="savenote">表の背景色、見た目の文言は、編集して各自のブラウザに変更を保存することが出来ます。</span>
 </div>
 <div class="memo-wrap"><div class="memotop" id="memotop"><label class="chk memo-chk"><input type="checkbox" id="skopt"> <span data-i18n="skopt">分解する装備 / 素材潤沢ならカットする装備 のランダムスキルも表示する。</span></label>
 <span class="pngs">
@@ -1927,7 +1927,7 @@ function tpSeedIsTop_(opts, c) {
   // 英語版のページの文言(2026-10-20)。キー = HTML の data-i18n。日本語は HTML に書いてあるもの
   var I18N = {
     h1: 'Run Memo Builder (Tales of Berseria Remastered RTA &mdash; treasure point pickup plan)',
-    lead: 'Enter your actions before NewGame (or n0) and your target counts, then press the &ldquo;&darr;Build plan&darr;&rdquo; button to output the run memo (pickup plan table).', savenote: 'Your table colors and &ldquo;Where to look&rdquo; texts are saved in your own browser.',
+    lead: 'Enter your actions before NewGame (or n0) and your target counts, then press the &ldquo;&darr;Build plan&darr;&rdquo; button to output the run memo (pickup plan table).', savenote: 'You can edit the table colors and &ldquo;Where to look&rdquo; texts; your changes are saved in your own browser.',
     h_ops: '• Actions before NewGame', th_op: 'Action', th_cnt: 'Times', th_rng: 'RNG calls',
     op_boot: 'Launch &rarr; first title screen (17324)', fixed1: '1 (fixed)',
     op_ld: 'Load a save (including quick load)<br>Choose &ldquo;Return to Title&rdquo; in another save<br>Lose a battle and see the retry screen',
