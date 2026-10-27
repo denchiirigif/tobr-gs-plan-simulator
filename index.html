@@ -165,20 +165,20 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </tbody>
 </table>
 <div class="fn">
-<p data-i18n="fn1"><b class="blue">※1</b>: ロケーション移動の近いセーブポイントをロードして、マップ往復で調整できる。</p>
+<p data-i18n="fn1"><b class="blue">※1</b>: ロケーション移動の近いセーブポイントをロード &rarr; マップ往復でn0を微調整できる。</p>
 <p data-i18n="fn2"><b class="red">※2</b>: グレード店で何もせずタイトルに戻り、再度 NewGame を選択すれば何度でも +8662 できる。</p>
 <p data-i18n="fn3"><b class="pur">※3</b>: リザルト画面でセリフが流れると乱数が 0〜2進む。(制御不能)</p>
 </div>
 </div>
 <div class="col">
-<div class="gg"><div>
+<div class="gg" id="gg"><div>
 <h2 data-i18n="h_goals">・トレジャーポイントからの目標拾得数</h2>
 <table class="goals">
 <thead><tr><th data-i18n="th_mat">拾得素材</th><th data-i18n="th_cap">目標確保数</th><th data-i18n="th_cost">許容立ち寄りコスト</th></tr></thead>
 <tbody id="goals"></tbody>
 </table>
 </div><div>
-<h2 data-i18n="h_gold">・ガルド回収</h2>
+<h2 data-i18n="h_gold">・ガルド回収リスト</h2>
 <table class="goals gold">
 <thead><tr><th data-i18n="th_gplace">場所</th><th data-i18n="th_gtake">回収</th></tr></thead>
 <tbody id="gold"></tbody>
@@ -1947,10 +1947,10 @@ function tpSeedIsTop_(opts, c) {
     op_auto: 'n0 (= total above &minus; 8662 for the last NewGame)',
     op_n0: 'Enter n0 directly (<b class="wb">* overrides the table above *</b>)',
     op_use: '<b>n0 used / GlobalSeed</b>',
-    fn1: '<b class="blue">※1</b>: Load a save point near a location change and adjust by going back and forth between maps.',
+    fn1: '<b class="blue">※1</b>: Load a save point near a location change &rarr; fine-tune n0 by going back and forth between maps.',
     fn2: '<b class="red">※2</b>: Back out of the Grade Shop to the title without doing anything and select NewGame again for another +8662, as many times as you like.',
     fn3: '<b class="pur">※3</b>: When a line plays on the battle result screen, the RNG advances 0&ndash;2 times. (uncontrollable)',
-    h_goals: '• Pickup targets from treasure points', h_gold: '• Gald pickups', th_gplace: 'Place', th_gtake: 'Pick up', th_mat: 'Material', th_cap: 'Target count', th_cost: 'Max detour cost',
+    h_goals: '• Pickup targets from treasure points', h_gold: '• Gald pickup list', th_gplace: 'Place', th_gtake: 'Pick up', th_mat: 'Material', th_cap: 'Target count', th_cost: 'Max detour cost',
     h_bt: '• Extra RNG rolls from result lines',
     bt_lead: 'In the two battles below in Titania, the result-line roll adds an uncertain number of RNG calls.<br>&ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; / &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo;',
     b_run: '&darr;Build plan&darr;', b_png_plan: 'Save PNG (pickup plan table only)', b_bg: 'Table colors', bg_title: 'Table colors', bg_area: 'Dungeon', bg_ok: 'Apply', bg_clear: 'Reset this dungeon', bg_clearall: 'Reset all', bg_ask: 'Reset every dungeon to its default color?', bg_yes: 'Reset', bg_no: 'Cancel', bg_close: 'Close', b_png_all: 'Save PNG (pickup plan / random skills / result lines tables, all)', b_reset: '&uarr;Reset to defaults&uarr;',
@@ -1999,8 +1999,8 @@ function tpSeedIsTop_(opts, c) {
   for (var j = 0; j < 3; j++) { opts($('rp' + j), RT.map(function (r, i) { return [i, r.label]; }), OPS_DEF.rp[j]); opts($('rk' + j), HALF, OPS_DEF.rk[j]); }
   // 言語を切り替える(2026-10-20)。値は変えず、表示する文字だけ書き換える
   // ガルド回収(2026-10-27 ユーザー指定。今は固定。[場所, 英語, 回収する])
-  var GOLD = [['タイタニア監視塔', 'Titania - Watchtower', true], ['ヘラヴィーサ倉庫', 'Hellawes - Warehouse', true], ['ゼクソン港 初回訪問', 'Port Zekson (1st visit)', true], ['ワァーグ樹林', 'Warg Forest', true],
-    ['王都地下道', 'Barona Catacombs', false], ['ロウライネ', 'Lothringen', false], ['ハリア村', 'Haria Village', false], ['マーナン海嘯', 'Manann Reef', false]];
+  var GOLD = [['タイタニア監視塔', 'Titania - Watchtower', true], ['ヘラヴィーサ倉庫', 'Hellawes - Warehouse', true], ['ゼクソン港 初回訪問', 'Port Zekson (1st visit)', true],
+    ['王都地下道', 'Barona Catacombs', false], ['ワァーグ樹林', 'Warg Forest', true], ['ロウライネ', 'Lothringen', false], ['ハリア村', 'Haria Village', false], ['マーナン海嘯', 'Manann Reef', false]];
   function relabel() {
     var en = isEn(), E = TP_EN;
     document.documentElement.lang = en ? 'en' : 'ja';
@@ -2026,6 +2026,7 @@ function tpSeedIsTop_(opts, c) {
     $('gold').innerHTML = GOLD.map(function (g) { return '<tr><td>' + escH(en ? g[1] : g[0]) + '</td><td class="' + (g[2] ? 'gy' : 'gn') + '">' + (g[2] ? T('回収する', 'Yes') : T('回収しない', 'No')) + '</td></tr>'; }).join('');
     if (!$('pg-seed').hidden) buildSeedRows();
     showSeeds();
+    if (typeof fitOps === 'function' && !$('pg-plan').hidden) fitOps();   // 言語で表の幅が変わるので列の縮小・表の間をやり直す
   }
   // ---- タブ(2026-10-20 ユーザー指定: 「拾得計画の出力」と「シード探し」を切り替える) ----
   function showTab(name) {
@@ -2539,7 +2540,13 @@ function tpSeedIsTop_(opts, c) {
   $('png_plan').addEventListener('click', function () { savePng('plan'); });
   $('png_all').addEventListener('click', function () { savePng('all'); });
   // 上段の左右(① と ②③)の下端をそろえる: 縦に長い方の列を縮める(2026-10-20 ユーザー指定。下限 0.75)
-  function fitOps() {
+  function fitOps() { $('gg').style.columnGap = ''; fitCols(); fitGold(); }   // 表の間を既定(28px)に戻してから列を縮め、その後で間を合わせる
+  function fitGold() {   // ②の表とガルド回収リストの間 = ①の表と②の表の間(見た目の幅。②の列は縮めて表示することがあるので zoom で割る。2026-10-27 ユーザー指定)
+    var c2 = document.querySelector('#pg-plan .cols > .col:last-child'), ops = document.querySelector('table.ops').getBoundingClientRect(), g = $('goals').closest('table').getBoundingClientRect();
+    var gap = Math.abs(g.top - ops.top) < 2 && g.left > ops.right ? g.left - ops.right : 66;
+    $('gg').style.columnGap = (gap / (parseFloat(c2.style.zoom) || 1)) + 'px';
+  }
+  function fitCols() {
     var c1 = document.querySelector('#pg-plan .cols > .col:first-child'), c2 = document.querySelector('#pg-plan .cols > .col:last-child');
     c1.style.zoom = ''; c2.style.zoom = '';
     if (c1.getBoundingClientRect().top !== c2.getBoundingClientRect().top) return;   // 縦1列に折り返しているときはそのまま
