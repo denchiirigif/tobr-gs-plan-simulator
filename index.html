@@ -933,7 +933,7 @@ var TP_MEMO_STYLE = '<style>\n' +
   '.how{margin-top:8px;border:1px solid var(--ln);padding:4px 6px;font-size:11px;line-height:1.45}\n' +
   '.how b{color:var(--fg)}.how ol{margin:2px 0 0;padding-left:18px}.how li{white-space:normal}.how .sp{font-size:10px}\n' +
   'tfoot td{color:var(--mut);text-align:center;font-size:11px}\n' +
-  'tfoot td.cu{color:var(--cu)}tfoot td.am{color:var(--am)}tfoot td.ag{color:var(--ag)}tfoot .nb{font-weight:normal}td.no{color:#ff8cc6;font-weight:normal;text-align:center}td.cid{color:#a0b4d8;font-weight:bold;text-align:center;font-size:11px}td.cp{color:#a0b4d8;font-weight:bold}\n' +   /* 合計の数字・「取らない」は素材の色で、太字にしない(2026-10-24 ユーザー指定) */
+  'tfoot td.cu{color:var(--cu)}tfoot td.am{color:var(--am)}tfoot td.ag{color:var(--ag)}tfoot .nb{font-weight:normal}td.no{color:#ff8cc6;font-weight:normal;text-align:center}td.cid{color:#ff8cc6;font-weight:bold;text-align:center;font-size:11px}td.cp{color:#ff8cc6;font-weight:bold}td.cc{text-align:center}tr.ch td.c{color:#ff8cc6}\n' +   /* 合計の数字・「取らない」は素材の色で、太字にしない(2026-10-24 ユーザー指定) */
   'html[lang=en] td.lk{white-space:normal;min-width:240px;max-width:320px}html[lang=en] table:not(.sk) tbody td:nth-child(2),html[lang=en] table:not(.sk) tr.d0 td:nth-child(2),html[lang=en] table:not(.sk) tr.d1 td:nth-child(2){white-space:normal;max-width:230px}\n' +   /* 英語版は説明が長いので折り返す(2026-10-20) */
   /* ウェブページの「予測されるランダムスキル」(2026-10-20) */ '.sk td{font-size:11px}.sk .sn{color:#9a9a9a;font-weight:normal}.sk .si{font-weight:bold}.sk .sb{color:#ff4fa3;font-weight:bold}.sk .so{color:#e06666}.sk .sa{color:#ff4040}.sk .sg{color:#5cbf5c;font-weight:bold}\n' +   /* sg = 対象装備以外の BS・攻撃力(方解石 #86e086 より少し濃い緑) */
   '</style>';
@@ -962,14 +962,14 @@ var TP_MEMO_TXT = {
     title: '本走メモ',
     // 宝箱の行(2026-10-26 ユーザー指定で上の表に統合): [フロア, 見た目]
     chests: { kw: ['ゼクソン港 倉庫', '琥珀の宝箱(エレノア①前)'], k9: ['ヴェスター坑道 クロガネの工房', '⑨古びた槍'],
-      kt: ['カドニクス港', '⑩トランクィッロ(青銅3個未満なら回収)'], kb: ['レニードの街', '⑪バッドソーンズ(1回目、青銅2個未満なら回収)'] }, chestId: '宝箱' },   // 「進行合計 = …」の見出しは 2026-10-21 ユーザー指定で削除(ページ下の注記に同じ説明がある)
+      kt: ['カドニクス港', '⑩トランクィッロ(青銅3個未満なら回収)'], kb: ['レニードの街', '⑪バッドソーンズ(青銅2個未満なら回収)'] }, chestId: '宝箱' },   // 「進行合計 = …」の見出しは 2026-10-21 ユーザー指定で削除(ページ下の注記に同じ説明がある)
   en: { hdr: ['ID', 'Location', 'Visit', 'Where to look'], total: ['Total (', ['Bronze', 'Amber', 'Silver', 'Powder', 'Calcite'], ')'], take: 'Take', skip: 'Skip',
     kw: 'Port Zekson warehouse Amber chest (before Eleanor 1)', k9: '⑨ Worn Spear (Vester Tunnels D09)', kt: '⑩ Tranquillo (Port Cadnix; take if Bronze &lt; 3)',
     kb: '⑪ Thorny Waistcoat (Reneed, 1st visit; take if Bronze &lt; 2)',
     warn: 'Do not pick up any treasure point not listed in the plan above, even if it glows.', free: 'Within the same floor, you may open the listed chests and pick up the listed treasure points in any order.',
     title: 'Run Memo',
     chests: { kw: ['Port Zekson - Warehouse', 'Amber chest (before Eleanor 1)'], k9: ['Vester Tunnels - Kurogane\'s workshop', '⑨ Worn Spear'],
-      kt: ['Port Cadnix', '⑩ Tranquillo (take if Bronze &lt; 3)'], kb: ['Reneed', '⑪ Thorny Waistcoat (1st visit; take if Bronze &lt; 2)'] }, chestId: 'Chest' }
+      kt: ['Port Cadnix', '⑩ Tranquillo (take if Bronze &lt; 3)'], kb: ['Reneed', '⑪ Thorny Waistcoat (take if Bronze &lt; 2)'] }, chestId: 'Chest' }
 };
 // 行の背景色 c(#rrggbb)に合わせた格子の線の色(2026-10-26 ユーザー指定 案A): 暗い色なら白を 25% 混ぜて明るく、明るい色なら黒を 30% 混ぜて暗く
 // → どの色を選んでも線が背景に溶け込まない。ウェブページの色の編集(仮塗り)でも使う
@@ -1006,7 +1006,7 @@ function tpMemoPlanTable_(res, en, bg, looks) {
     if (key.indexOf('chest|') === 0) {
       var c = key.slice(6), cl = T.chests[c];
       if (CHEST[c][1] !== dungeon) { dungeon = CHEST[c][1]; band = 1 - band; }
-      rows.push(trOpen(dungeon) + '<td class="cid">' + T.chestId + '</td><td class="cp">' + cl[0] + '</td><td class="vk"></td><td class="lk cp"' + lkAttr('chest:' + c) + '>' + myLook('chest:' + c, cl[1]) + '</td>' + chest(c, CHEST[c][0]) + '</tr>');
+      rows.push(trOpen(dungeon, 'ch') + '<td class="cid">' + T.chestId + '</td><td class="cp">' + cl[0] + '</td><td class="vk"></td><td class="lk cp cc">' + cl[1] + '</td>' + chest(c, CHEST[c][0]) + '</tr>');
       return;
     }
     var q = info[key], pid = q.id;
@@ -1021,7 +1021,7 @@ function tpMemoPlanTable_(res, en, bg, looks) {
   });
   function lkAttr(k) { return looks ? ' data-k="' + tpMemoEsc_(k) + '"' : ''; }
   function myLook(k, def) { return looks && looks[k] ? tpMemoEsc_(looks[k]) : def; }   // def は HTML のまま(宝箱の文言は &lt; を含む)
-  function trOpen(a) { return '<tr class="d' + band + (bg && bg[a] ? ' cb" style="--rb:' + bg[a] + ';--rl:' + tpMemoLine_(bg[a]) : '') + '"' + (bg ? ' data-a="' + tpMemoEsc_(a) + '"' : '') + '>'; }
+  function trOpen(a, x) { return '<tr class="d' + band + (x ? ' ' + x : '') + (bg && bg[a] ? ' cb" style="--rb:' + bg[a] + ';--rl:' + tpMemoLine_(bg[a]) : '') + '"' + (bg ? ' data-a="' + tpMemoEsc_(a) + '"' : '') + '>'; }
   var CNTCLS = ['cu', 'am', 'ag', 'ok', 'ca'];   // 合計の並び 青銅/琥珀/黒銀/錬成粉/方解石 の色(2026-10-24)
   function chest(key, cls) {
     return K.map(function (k) { var on = res[k][key] === '回収'; return '<td class="' + (on ? 'c ' + cls : 'no') + '">' + (on ? T.take : T.skip) + '</td>'; }).join('');
@@ -2540,11 +2540,14 @@ function tpSeedIsTop_(opts, c) {
   $('png_plan').addEventListener('click', function () { savePng('plan'); });
   $('png_all').addEventListener('click', function () { savePng('all'); });
   // 上段の左右(① と ②③)の下端をそろえる: 縦に長い方の列を縮める(2026-10-20 ユーザー指定。下限 0.75)
-  function fitOps() { $('gg').style.columnGap = ''; fitCols(); fitGold(); }   // 表の間を既定(28px)に戻してから列を縮め、その後で間を合わせる
+  function fitOps() { $('gg').style.columnGap = ''; document.querySelector('table.ops thead tr').style.height = ''; fitCols(); fitGold(); }   // 表の間を既定(28px)に戻してから列を縮め、その後で間を合わせる
   function fitGold() {   // ②の表とガルド回収リストの間 = ①の表と②の表の間(見た目の幅。②の列は縮めて表示することがあるので zoom で割る。2026-10-27 ユーザー指定)
     var c2 = document.querySelector('#pg-plan .cols > .col:last-child'), ops = document.querySelector('table.ops').getBoundingClientRect(), g = $('goals').closest('table').getBoundingClientRect();
     var gap = Math.abs(g.top - ops.top) < 2 && g.left > ops.right ? g.left - ops.right : 66;
     $('gg').style.columnGap = (gap / (parseFloat(c2.style.zoom) || 1)) + 'px';
+    // 青帯(見出しの行)の高さ: ①の表を②の表(縮めた後の見た目の高さ)に合わせる(2026-10-27 ユーザー指定)
+    var oh = document.querySelector('table.ops thead tr'), gh = $('goals').closest('table').querySelector('thead tr');
+    oh.style.height = ''; if (Math.abs(g.top - ops.top) < 2) oh.style.height = gh.getBoundingClientRect().height + 'px';
   }
   function fitCols() {
     var c1 = document.querySelector('#pg-plan .cols > .col:first-child'), c2 = document.querySelector('#pg-plan .cols > .col:last-child');
