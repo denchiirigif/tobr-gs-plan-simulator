@@ -69,7 +69,7 @@ table.ops th,table.ops td,table.goals th,table.goals td,.battle td,.battle th{bo
 table.ops th,table.goals th,.battle th{background:var(--hd);color:var(--hdfg);font-weight:bold;white-space:nowrap}
 table.goals td{white-space:nowrap}
 table.goals td.mat{font-weight:bold}
-.gg{display:flex;flex-wrap:wrap;gap:8px 28px;align-items:flex-start}   /* ②の目標の表の右にガルド回収の表(2026-10-27 ユーザー指定) */
+.gg{position:relative}#gg1{width:max-content}#gg2{position:absolute;top:0;left:100%}   /* ガルド回収リストは目標の表の右に重ねて置く(行を目標の表と同じ高さにしても列の高さを変えない。left・右の余白は fitGold) */   /* ②の目標の表の右にガルド回収の表(2026-10-27 ユーザー指定) */
 table.gold td.gy{color:#7fd17f;font-weight:bold;text-align:center}table.gold td.gn{color:var(--mut);text-align:center}
 table.goals input{width:4.5em}
 table.ops td.op select{max-width:100%}
@@ -171,20 +171,20 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </div>
 </div>
 <div class="col">
-<div class="gg" id="gg"><div>
+<div class="gg" id="gg"><div id="gg1">
 <h2 data-i18n="h_goals">・トレジャーポイントからの目標拾得数</h2>
 <table class="goals">
 <thead><tr><th data-i18n="th_mat">拾得素材</th><th data-i18n="th_cap">目標確保数</th><th data-i18n="th_cost">許容立ち寄りコスト</th></tr></thead>
 <tbody id="goals"></tbody>
 </table>
-</div><div>
+</div><div id="gg2">
 <h2 data-i18n="h_gold">・ガルド回収リスト</h2>
 <table class="goals gold">
 <thead><tr><th data-i18n="th_gplace">場所</th><th data-i18n="th_gtake">回収</th></tr></thead>
 <tbody id="gold"></tbody>
 </table>
 </div></div>
-<h2 class="pur" data-i18n="h_bt">・リザルトセリフによるExtra RNG Rollsの増分表</h2>
+<h2 class="pur" data-i18n="h_bt">・Extra RNG Rollsの増分表</h2>
 <div class="bt-lead" data-i18n="bt_lead">タイタニアの下記2戦闘で、リザルトセリフ抽選による不定の乱数消費がある。<br>『対魔士1+傭兵1』/『対魔士1+傭兵2』</div>
 <div id="battle" class="battle"></div>
 </div>
@@ -962,14 +962,14 @@ var TP_MEMO_TXT = {
     title: '本走メモ',
     // 宝箱の行(2026-10-26 ユーザー指定で上の表に統合): [フロア, 見た目]
     chests: { kw: ['ゼクソン港 倉庫', '琥珀の宝箱(エレノア①前)'], k9: ['ヴェスター坑道 クロガネの工房', '⑨古びた槍'],
-      kt: ['カドニクス港', '⑩トランクィッロ(青銅3個未満なら回収)'], kb: ['レニードの街', '⑪バッドソーンズ(青銅2個未満なら回収)'] }, chestId: '宝箱' },   // 「進行合計 = …」の見出しは 2026-10-21 ユーザー指定で削除(ページ下の注記に同じ説明がある)
+      kt: ['カドニクス港', '⑩トランクィッロ'], kb: ['レニードの街', '⑪バッドソーンズ'] }, chestId: '宝箱' },   // 「進行合計 = …」の見出しは 2026-10-21 ユーザー指定で削除(ページ下の注記に同じ説明がある)
   en: { hdr: ['ID', 'Location', 'Visit', 'Where to look'], total: ['Total (', ['Bronze', 'Amber', 'Silver', 'Powder', 'Calcite'], ')'], take: 'Take', skip: 'Skip',
     kw: 'Port Zekson warehouse Amber chest (before Eleanor 1)', k9: '⑨ Worn Spear (Vester Tunnels D09)', kt: '⑩ Tranquillo (Port Cadnix; take if Bronze &lt; 3)',
     kb: '⑪ Thorny Waistcoat (Reneed, 1st visit; take if Bronze &lt; 2)',
     warn: 'Do not pick up any treasure point not listed in the plan above, even if it glows.', free: 'Within the same floor, you may open the listed chests and pick up the listed treasure points in any order.',
     title: 'Run Memo',
     chests: { kw: ['Port Zekson - Warehouse', 'Amber chest (before Eleanor 1)'], k9: ['Vester Tunnels - Kurogane\'s workshop', '⑨ Worn Spear'],
-      kt: ['Port Cadnix', '⑩ Tranquillo (take if Bronze &lt; 3)'], kb: ['Reneed', '⑪ Thorny Waistcoat (take if Bronze &lt; 2)'] }, chestId: 'Chest' }
+      kt: ['Port Cadnix', '⑩ Tranquillo'], kb: ['Reneed', '⑪ Thorny Waistcoat'] }, chestId: 'Chest' }
 };
 // 行の背景色 c(#rrggbb)に合わせた格子の線の色(2026-10-26 ユーザー指定 案A): 暗い色なら白を 25% 混ぜて明るく、明るい色なら黒を 30% 混ぜて暗く
 // → どの色を選んでも線が背景に溶け込まない。ウェブページの色の編集(仮塗り)でも使う
@@ -1951,7 +1951,7 @@ function tpSeedIsTop_(opts, c) {
     fn2: '<b class="red">※2</b>: Back out of the Grade Shop to the title without doing anything and select NewGame again for another +8662, as many times as you like.',
     fn3: '<b class="pur">※3</b>: When a line plays on the battle result screen, the RNG advances 0&ndash;2 times. (uncontrollable)',
     h_goals: '• Pickup targets from treasure points', h_gold: '• Gald pickup list', th_gplace: 'Place', th_gtake: 'Pick up', th_mat: 'Material', th_cap: 'Target count', th_cost: 'Max detour cost',
-    h_bt: '• Extra RNG rolls from result lines',
+    h_bt: '• Extra RNG rolls',
     bt_lead: 'In the two battles below in Titania, the result-line roll adds an uncertain number of RNG calls.<br>&ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; / &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo;',
     b_run: '&darr;Build plan&darr;', b_png_plan: 'Save PNG (pickup plan table only)', b_bg: 'Table colors', bg_title: 'Table colors', bg_area: 'Dungeon', bg_ok: 'Apply', bg_clear: 'Reset this dungeon', bg_clearall: 'Reset all', bg_ask: 'Reset every dungeon to its default color?', bg_yes: 'Reset', bg_no: 'Cancel', bg_close: 'Close', b_png_all: 'Save PNG (pickup plan / random skills / result lines tables, all)', b_reset: '&uarr;Reset to defaults&uarr;',
     skopt: 'Also show the random skills of gear you dismantle / cut when materials are plentiful.',
@@ -2540,11 +2540,15 @@ function tpSeedIsTop_(opts, c) {
   $('png_plan').addEventListener('click', function () { savePng('plan'); });
   $('png_all').addEventListener('click', function () { savePng('all'); });
   // 上段の左右(① と ②③)の下端をそろえる: 縦に長い方の列を縮める(2026-10-20 ユーザー指定。下限 0.75)
-  function fitOps() { $('gg').style.columnGap = ''; document.querySelector('table.ops thead tr').style.height = ''; fitCols(); fitGold(); }   // 表の間を既定(28px)に戻してから列を縮め、その後で間を合わせる
+  function fitOps() { document.querySelector('table.ops thead tr').style.height = ''; $('gg2').style.left = ($('gg1').offsetWidth + 28) + 'px'; $('gg').style.width = ($('gg1').offsetWidth + 28 + $('gg2').offsetWidth) + 'px'; goldRows(); fitCols(); fitGold(); }   // 表の間を狭く(28px)取って列を縮めてから、間を①②と同じに広げる
+  function goldRows() {   // ガルド回収リストの行の高さ = 目標の表の行の高さ(同じ列なので CSS の高さのまま。列の縮小より前に。2026-10-27 ユーザー指定)
+    var gr = $('goals').querySelector('tr'); if (gr) $('gold').querySelectorAll('tr').forEach(function (tr) { tr.style.height = gr.offsetHeight + 'px'; });
+  }   // 表の間を既定(28px)に戻してから列を縮め、その後で間を合わせる
   function fitGold() {   // ②の表とガルド回収リストの間 = ①の表と②の表の間(見た目の幅。②の列は縮めて表示することがあるので zoom で割る。2026-10-27 ユーザー指定)
     var c2 = document.querySelector('#pg-plan .cols > .col:last-child'), ops = document.querySelector('table.ops').getBoundingClientRect(), g = $('goals').closest('table').getBoundingClientRect();
     var gap = Math.abs(g.top - ops.top) < 2 && g.left > ops.right ? g.left - ops.right : 66;
-    $('gg').style.columnGap = (gap / (parseFloat(c2.style.zoom) || 1)) + 'px';
+    var gz = gap / (parseFloat(c2.style.zoom) || 1);   // CSS の幅
+    $('gg2').style.left = ($('gg1').offsetWidth + gz) + 'px'; $('gg').style.width = ($('gg1').offsetWidth + gz + $('gg2').offsetWidth) + 'px';
     // 青帯(見出しの行)の高さ: ①の表を②の表(縮めた後の見た目の高さ)に合わせる(2026-10-27 ユーザー指定)
     var oh = document.querySelector('table.ops thead tr'), gh = $('goals').closest('table').querySelector('thead tr');
     oh.style.height = ''; if (Math.abs(g.top - ops.top) < 2) oh.style.height = gh.getBoundingClientRect().height + 'px';
