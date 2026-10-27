@@ -69,6 +69,8 @@ table.ops th,table.ops td,table.goals th,table.goals td,.battle td,.battle th{bo
 table.ops th,table.goals th,.battle th{background:var(--hd);color:var(--hdfg);font-weight:bold;white-space:nowrap}
 table.goals td{white-space:nowrap}
 table.goals td.mat{font-weight:bold}
+.gg{display:flex;flex-wrap:wrap;gap:8px 28px;align-items:flex-start}   /* ②の目標の表の右にガルド回収の表(2026-10-27 ユーザー指定) */
+table.gold td.gy{color:#7fd17f;font-weight:bold;text-align:center}table.gold td.gn{color:var(--mut);text-align:center}
 table.goals input{width:4.5em}
 table.ops td.op select{max-width:100%}
 table.ops td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -169,11 +171,19 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </div>
 </div>
 <div class="col">
+<div class="gg"><div>
 <h2 data-i18n="h_goals">・トレジャーポイントからの目標拾得数</h2>
 <table class="goals">
 <thead><tr><th data-i18n="th_mat">拾得素材</th><th data-i18n="th_cap">目標確保数</th><th data-i18n="th_cost">許容立ち寄りコスト</th></tr></thead>
 <tbody id="goals"></tbody>
 </table>
+</div><div>
+<h2 data-i18n="h_gold">・ガルド回収</h2>
+<table class="goals gold">
+<thead><tr><th data-i18n="th_gplace">場所</th><th data-i18n="th_gtake">回収</th></tr></thead>
+<tbody id="gold"></tbody>
+</table>
+</div></div>
 <h2 class="pur" data-i18n="h_bt">・リザルトセリフによるExtra RNG Rollsの増分表</h2>
 <div class="bt-lead" data-i18n="bt_lead">タイタニアの下記2戦闘で、リザルトセリフ抽選による不定の乱数消費がある。<br>『対魔士1+傭兵1』/『対魔士1+傭兵2』</div>
 <div id="battle" class="battle"></div>
@@ -192,11 +202,11 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </div>
 <div class="memo-wrap"><div class="memotop" id="memotop"><label class="chk memo-chk"><input type="checkbox" id="skopt"> <span data-i18n="skopt">分解する装備 / 素材潤沢ならカットする装備 のランダムスキルも表示する。</span></label>
 <span class="pngs">
-<button id="bgbtn" class="green" disabled data-i18n="b_bg">表の背景色設定</button>
+<button id="bgbtn" class="green" disabled data-i18n="b_bg">表の背景色を設定</button>
 <button id="png_plan" class="primary" disabled data-i18n="b_png_plan">pngで保存 (拾得計画表のみ)</button>
 <button id="png_all" disabled data-i18n="b_png_all">pngで保存 (拾得計画表 / ランダムスキル表 / リザルトセリフ表 全て)</button>
 </span></div>
-<dialog id="bgdlg"><h3 data-i18n="bg_title">表の背景色設定</h3><div id="bg_main"><div id="bg_list"></div><div id="bg_pk" hidden><div id="pk_sv"><i class="kn" id="pk_svk"></i></div><div id="pk_h"><i class="kn" id="pk_hk"></i></div><div class="r"><input id="pk_hex" maxlength="7" spellcheck="false"><span id="pk_pv"></span><button id="bg_ok" class="primary" data-i18n="bg_ok">決定</button></div></div><div class="r end"><button id="bg_clearall" data-i18n="bg_clearall">すべて初期色に戻す</button><button id="bg_close" data-i18n="bg_close">閉じる</button></div></div><div id="bg_ask" hidden><div class="r" data-i18n="bg_ask">すべてのダンジョンを初期色に戻しますか？</div><div class="r"><button id="bg_yes" class="primary" data-i18n="bg_yes">戻す</button><button id="bg_no" data-i18n="bg_no">やめる</button></div></div></dialog>
+<dialog id="bgdlg"><h3 data-i18n="bg_title">表の背景色を設定</h3><div id="bg_main"><div id="bg_list"></div><div id="bg_pk" hidden><div id="pk_sv"><i class="kn" id="pk_svk"></i></div><div id="pk_h"><i class="kn" id="pk_hk"></i></div><div class="r"><input id="pk_hex" maxlength="7" spellcheck="false"><span id="pk_pv"></span><button id="bg_ok" class="primary" data-i18n="bg_ok">決定</button></div></div><div class="r end"><button id="bg_clearall" data-i18n="bg_clearall">すべて初期色に戻す</button><button id="bg_close" data-i18n="bg_close">閉じる</button></div></div><div id="bg_ask" hidden><div class="r" data-i18n="bg_ask">すべてのダンジョンを初期色に戻しますか？</div><div class="r"><button id="bg_yes" class="primary" data-i18n="bg_yes">戻す</button><button id="bg_no" data-i18n="bg_no">やめる</button></div></div></dialog>
 <iframe id="memo" title="本走メモ" scrolling="no"></iframe></div>
 <iframe id="pngbox" title="PNG" scrolling="no" aria-hidden="true" tabindex="-1"></iframe>
 <section class="notes">
@@ -230,7 +240,7 @@ footer{padding:0 16px 16px;font-size:11px;color:var(--mut)}
 </div>
 </section>
 </main>
-<footer data-i18n="stamp">計算ロジック: コード.js 2026-10-21 生成(sha256 cde992b00331)・ページ作成 2026-10-26</footer>
+<footer data-i18n="stamp">計算ロジック: コード.js 2026-10-21 生成(sha256 cde992b00331)・ページ作成 2026-10-27</footer>
 <script type="text/plain" id="logic">/**
  * ベルセリア RTA トレジャーポイント拾得計画(NewGame〜ロウライネ)
  * 自動生成: TreasureAnalysis\基準記録\gen_appscript.py(手で直さないこと)  生成日 2026-10-21
@@ -1940,13 +1950,13 @@ function tpSeedIsTop_(opts, c) {
     fn1: '<b class="blue">※1</b>: Load a save point near a location change and adjust by going back and forth between maps.',
     fn2: '<b class="red">※2</b>: Back out of the Grade Shop to the title without doing anything and select NewGame again for another +8662, as many times as you like.',
     fn3: '<b class="pur">※3</b>: When a line plays on the battle result screen, the RNG advances 0&ndash;2 times. (uncontrollable)',
-    h_goals: '• Pickup targets from treasure points', th_mat: 'Material', th_cap: 'Target count', th_cost: 'Max detour cost',
+    h_goals: '• Pickup targets from treasure points', h_gold: '• Gald pickups', th_gplace: 'Place', th_gtake: 'Pick up', th_mat: 'Material', th_cap: 'Target count', th_cost: 'Max detour cost',
     h_bt: '• Extra RNG rolls from result lines',
     bt_lead: 'In the two battles below in Titania, the result-line roll adds an uncertain number of RNG calls.<br>&ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; / &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo;',
     b_run: '&darr;Build plan&darr;', b_png_plan: 'Save PNG (pickup plan table only)', b_bg: 'Table colors', bg_title: 'Table colors', bg_area: 'Dungeon', bg_ok: 'Apply', bg_clear: 'Reset this dungeon', bg_clearall: 'Reset all', bg_ask: 'Reset every dungeon to its default color?', bg_yes: 'Reset', bg_no: 'Cancel', bg_close: 'Close', b_png_all: 'Save PNG (pickup plan / random skills / result lines tables, all)', b_reset: '&uarr;Reset to defaults&uarr;',
     skopt: 'Also show the random skills of gear you dismantle / cut when materials are plentiful.',
     n1: '+0 to +5 columns: Extra RNG Rolls (= how many more RNG calls than planned happened between NewGame and Burnack Plateau.)<br>= the sum of<ul><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;1&rdquo; (+0~2)</li><li>Result line of &ldquo;Exorcist &times;1 + Mercenary &times;2&rdquo; (+0~2)</li><li>Pickups (adjusting by picking up treasure points, Fire Ring, etc.) (+1)</li></ul>',
-    stamp: 'Plan logic: コード.js generated 2026-10-21 (sha256 cde992b00331) / page built 2026-10-26',
+    stamp: 'Plan logic: コード.js generated 2026-10-21 (sha256 cde992b00331) / page built 2026-10-27',
     tab_plan: 'TP pickup plan', tab_seed: 'Seed finder',
     sd_h_cost: '• Cost settings', sd_c_ng: 'NewGame re-press (each)', sd_c_half: 'Map move (per half round trip)', sd_c_load: 'Load &amp; return to title', sd_c_pick: 'Item pickup',
     sd_h_skill: '• Wanted random skills', sd_back: 'Back to the skill condition screen', sd_opt: 'Also specify skills for gear you dismantle / cut when materials are plentiful.',
@@ -1988,6 +1998,9 @@ function tpSeedIsTop_(opts, c) {
   opts($('ld'), range(0, 20), OPS_DEF.ld); opts($('tb'), range(0, 50), OPS_DEF.tb); opts($('rs'), range(0, 20), OPS_DEF.rs); opts($('ng'), range(1, 20), OPS_DEF.ng);
   for (var j = 0; j < 3; j++) { opts($('rp' + j), RT.map(function (r, i) { return [i, r.label]; }), OPS_DEF.rp[j]); opts($('rk' + j), HALF, OPS_DEF.rk[j]); }
   // 言語を切り替える(2026-10-20)。値は変えず、表示する文字だけ書き換える
+  // ガルド回収(2026-10-27 ユーザー指定。今は固定。[場所, 英語, 回収する])
+  var GOLD = [['タイタニア監視塔', 'Titania - Watchtower', true], ['ヘラヴィーサ倉庫', 'Hellawes - Warehouse', true], ['ゼクソン港 初回訪問', 'Port Zekson (1st visit)', true], ['ワァーグ樹林', 'Warg Forest', true],
+    ['王都地下道', 'Barona Catacombs', false], ['ロウライネ', 'Lothringen', false], ['ハリア村', 'Haria Village', false], ['マーナン海嘯', 'Manann Reef', false]];
   function relabel() {
     var en = isEn(), E = TP_EN;
     document.documentElement.lang = en ? 'en' : 'ja';
@@ -2010,6 +2023,7 @@ function tpSeedIsTop_(opts, c) {
       });
     }
     $('battle').innerHTML = en ? battleEn() : BATTLE_JA;
+    $('gold').innerHTML = GOLD.map(function (g) { return '<tr><td>' + escH(en ? g[1] : g[0]) + '</td><td class="' + (g[2] ? 'gy' : 'gn') + '">' + (g[2] ? T('回収する', 'Yes') : T('回収しない', 'No')) + '</td></tr>'; }).join('');
     if (!$('pg-seed').hidden) buildSeedRows();
     showSeeds();
   }
@@ -2367,6 +2381,7 @@ function tpSeedIsTop_(opts, c) {
   function lkSetup() {   // 表示中の表の見た目の欄にペンを付ける
     var d = $('memo').contentDocument; if (!d || !d.head) return;
     var st = d.createElement('style'); st.textContent = LK_CSS; d.head.appendChild(st);
+    d.querySelectorAll('th').forEach(function (th) { if (th.textContent === '見た目' || th.textContent === 'Where to look') th.textContent += T(' (文言を編集可能)', ' (editable)'); });   // ページの表示だけ(PNG・PC の本走メモは「見た目」のまま。2026-10-27)
     d.querySelectorAll('td.lk[data-k]').forEach(function (td) {
       td.classList.toggle('my', !!LOOKS[td.dataset.k]);
       td.insertAdjacentHTML('beforeend', '<button class="pen" title="' + escH(T('見た目の文言を編集', 'Edit the “Where to look” text')) + '">' + LK_PEN + '</button>');
