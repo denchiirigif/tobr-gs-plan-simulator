@@ -933,7 +933,7 @@ var TP_MEMO_STYLE = '<style>\n' +
   '.how{margin-top:8px;border:1px solid var(--ln);padding:4px 6px;font-size:11px;line-height:1.45}\n' +
   '.how b{color:var(--fg)}.how ol{margin:2px 0 0;padding-left:18px}.how li{white-space:normal}.how .sp{font-size:10px}\n' +
   'tfoot td{color:var(--mut);text-align:center;font-size:11px}\n' +
-  'tfoot td.cu{color:var(--cu)}tfoot td.am{color:var(--am)}tfoot td.ag{color:var(--ag)}tfoot .nb{font-weight:normal}td.no{color:#ff8cc6;font-weight:normal;text-align:center}td.cid{color:#ff8cc6;font-weight:bold;text-align:center;font-size:11px}td.cp{color:#ff8cc6;font-weight:bold}td.cc{text-align:center}tr.ch td.c{color:#ff8cc6}\n' +   /* 合計の数字・「取らない」は素材の色で、太字にしない(2026-10-24 ユーザー指定) */
+  'tfoot td.cu{color:var(--cu)}tfoot td.am{color:var(--am)}tfoot td.ag{color:var(--ag)}tfoot .nb{font-weight:normal}td.no{color:#ff8cc6;font-weight:normal;text-align:center}td.cid{color:#ff8cc6;font-weight:bold;text-align:center;font-size:11px}td.cp{color:#ff8cc6;font-weight:bold}td.cc{text-align:center}\n' +   /* 合計の数字・「取らない」は素材の色で、太字にしない(2026-10-24 ユーザー指定) */
   'html[lang=en] td.lk{white-space:normal;min-width:240px;max-width:320px}html[lang=en] table:not(.sk) tbody td:nth-child(2),html[lang=en] table:not(.sk) tr.d0 td:nth-child(2),html[lang=en] table:not(.sk) tr.d1 td:nth-child(2){white-space:normal;max-width:230px}\n' +   /* 英語版は説明が長いので折り返す(2026-10-20) */
   /* ウェブページの「予測されるランダムスキル」(2026-10-20) */ '.sk td{font-size:11px}.sk .sn{color:#9a9a9a;font-weight:normal}.sk .si{font-weight:bold}.sk .sb{color:#ff4fa3;font-weight:bold}.sk .so{color:#e06666}.sk .sa{color:#ff4040}.sk .sg{color:#5cbf5c;font-weight:bold}\n' +   /* sg = 対象装備以外の BS・攻撃力(方解石 #86e086 より少し濃い緑) */
   '</style>';
@@ -961,14 +961,14 @@ var TP_MEMO_TXT = {
     warn: '上記の計画表に書かれていないトレジャーポイントは、光っていても拾わないでください。', free: '同じフロア内の宝箱・トレジャーポイントであれば拾う順番は自由です。',
     title: '本走メモ',
     // 宝箱の行(2026-10-26 ユーザー指定で上の表に統合): [フロア, 見た目]
-    chests: { kw: ['ゼクソン港 倉庫', '琥珀の宝箱(エレノア①前)'], k9: ['ヴェスター坑道 クロガネの工房', '⑨古びた槍'],
+    chests: { kw: ['ゼクソン港 倉庫', '琥珀の欠片 (エレノア①直前)'], k9: ['ヴェスター坑道 クロガネの工房', '⑨古びた槍'],
       kt: ['カドニクス港', '⑩トランクィッロ'], kb: ['レニードの街', '⑪バッドソーンズ'] }, chestId: '宝箱' },   // 「進行合計 = …」の見出しは 2026-10-21 ユーザー指定で削除(ページ下の注記に同じ説明がある)
   en: { hdr: ['ID', 'Location', 'Visit', 'Where to look'], total: ['Total (', ['Bronze', 'Amber', 'Silver', 'Powder', 'Calcite'], ')'], take: 'Take', skip: 'Skip',
     kw: 'Port Zekson warehouse Amber chest (before Eleanor 1)', k9: '⑨ Worn Spear (Vester Tunnels D09)', kt: '⑩ Tranquillo (Port Cadnix; take if Bronze &lt; 3)',
     kb: '⑪ Thorny Waistcoat (Reneed, 1st visit; take if Bronze &lt; 2)',
     warn: 'Do not pick up any treasure point not listed in the plan above, even if it glows.', free: 'Within the same floor, you may open the listed chests and pick up the listed treasure points in any order.',
     title: 'Run Memo',
-    chests: { kw: ['Port Zekson - Warehouse', 'Amber chest (before Eleanor 1)'], k9: ['Vester Tunnels - Kurogane\'s workshop', '⑨ Worn Spear'],
+    chests: { kw: ['Port Zekson - Warehouse', 'Amber Fragment (just before Eleanor 1)'], k9: ['Vester Tunnels - Kurogane\'s workshop', '⑨ Worn Spear'],
       kt: ['Port Cadnix', '⑩ Tranquillo'], kb: ['Reneed', '⑪ Thorny Waistcoat'] }, chestId: 'Chest' }
 };
 // 行の背景色 c(#rrggbb)に合わせた格子の線の色(2026-10-26 ユーザー指定 案A): 暗い色なら白を 25% 混ぜて明るく、明るい色なら黒を 30% 混ぜて暗く
@@ -2382,7 +2382,7 @@ function tpSeedIsTop_(opts, c) {
   function lkSetup() {   // 表示中の表の見た目の欄にペンを付ける
     var d = $('memo').contentDocument; if (!d || !d.head) return;
     var st = d.createElement('style'); st.textContent = LK_CSS; d.head.appendChild(st);
-    d.querySelectorAll('th').forEach(function (th) { if (th.textContent === '見た目' || th.textContent === 'Where to look') th.textContent += T(' (文言を編集可能)', ' (editable)'); });   // ページの表示だけ(PNG・PC の本走メモは「見た目」のまま。2026-10-27)
+    d.querySelectorAll('th').forEach(function (th) { if (th.textContent === '見た目' || th.textContent === 'Where to look') th.textContent += T(' (文言の編集が可能です)', ' (editable)'); });   // ページの表示だけ(PNG・PC の本走メモは「見た目」のまま。2026-10-27)
     d.querySelectorAll('td.lk[data-k]').forEach(function (td) {
       td.classList.toggle('my', !!LOOKS[td.dataset.k]);
       td.insertAdjacentHTML('beforeend', '<button class="pen" title="' + escH(T('見た目の文言を編集', 'Edit the “Where to look” text')) + '">' + LK_PEN + '</button>');
