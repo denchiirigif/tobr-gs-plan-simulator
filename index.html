@@ -81,8 +81,8 @@ table.ops td.res{background:#4f633b;font-weight:bold}   /* 使う n0 / GlobalSee
 table.ops td.res b{font-size:15px}
 #ng{font-weight:bold}   /* NewGame の回数は太字(紫はやめた。2026-10-20 ユーザー指定) */
 /* ① は②③より縦に長いので詰める(2026-10-20 ユーザー指定。さらに script で②③の高さに合わせて縮める) */
-table.ops{font-size:12px;line-height:1.3}
-table.ops th,table.ops td{padding:2px 5px}
+table.ops,table.goals,.battle table{font-size:12px;line-height:1.3}   /* ②③とガルド回収リストも①と同じ文字の大きさ・余白(青帯の文字をそろえる。2026-10-27 ユーザー指定) */
+table.ops th,table.ops td,table.goals th,table.goals td,.battle td,.battle th{padding:2px 5px}
 table.ops select,table.ops input{padding:0 3px;font-size:12px}
 .fn{font-size:11px;margin:6px 0 0;max-width:60em}
 .fn p{margin:2px 0}
@@ -2547,8 +2547,11 @@ function tpSeedIsTop_(opts, c) {
   function fitGold() {   // ②の表とガルド回収リストの間 = ①の表と②の表の間(見た目の幅。②の列は縮めて表示することがあるので zoom で割る。2026-10-27 ユーザー指定)
     var c2 = document.querySelector('#pg-plan .cols > .col:last-child'), ops = document.querySelector('table.ops').getBoundingClientRect(), g = $('goals').closest('table').getBoundingClientRect();
     var gap = Math.abs(g.top - ops.top) < 2 && g.left > ops.right ? g.left - ops.right : 66;
-    var gz = gap / (parseFloat(c2.style.zoom) || 1);   // CSS の幅
-    $('gg2').style.left = ($('gg1').offsetWidth + gz) + 'px'; $('gg').style.width = ($('gg1').offsetWidth + gz + $('gg2').offsetWidth) + 'px';
+    var zz = parseFloat(c2.style.zoom) || 1, gz = gap * 1.7 / zz;   // CSS の幅。間は①②の 1.7 倍(③の増分表との間が狭いので。2026-10-27 ユーザー指定)
+    var c1 = document.querySelector('#pg-plan .cols > .col:first-child'), wrap0 = c1.getBoundingClientRect().top !== c2.getBoundingClientRect().top;
+    function setGap() { $('gg2').style.left = ($('gg1').offsetWidth + gz) + 'px'; $('gg').style.width = ($('gg1').offsetWidth + gz + $('gg2').offsetWidth) + 'px'; }
+    setGap();
+    while (!wrap0 && gz > gap / zz && c1.getBoundingClientRect().top !== c2.getBoundingClientRect().top) { gz = Math.max(gz - 4, gap / zz); setGap(); }   // 横に入りきらず折り返すときは、①②の間と同じになるまで詰める
     // 青帯(見出しの行)の高さ: ①の表を②の表(縮めた後の見た目の高さ)に合わせる(2026-10-27 ユーザー指定)
     var oh = document.querySelector('table.ops thead tr'), gh = $('goals').closest('table').querySelector('thead tr');
     oh.style.height = ''; if (Math.abs(g.top - ops.top) < 2) oh.style.height = gh.getBoundingClientRect().height + 'px';
